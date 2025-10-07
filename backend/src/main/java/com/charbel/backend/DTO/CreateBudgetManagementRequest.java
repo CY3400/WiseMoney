@@ -17,6 +17,4 @@ public class CreateBudgetManagementRequest {
 
     public BigDecimal getAmount(){ return amount; }
     public void setAmount(BigDecimal amount){ this.amount = amount; }
-
-    /*comment */
 }
