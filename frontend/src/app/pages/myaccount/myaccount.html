@@ -1,0 +1,47 @@
+<div class="center-page">
+  <div class="error border-danger" *ngIf="hasErrors()">
+    <span *ngIf="errors.global" class="text-danger">{{ errors.global }}</span>
+    <span *ngIf="errors.firstName" class="text-danger">{{ errors.firstName }}</span>
+    <span *ngIf="errors.lastName" class="text-danger">{{ errors.lastName }}</span>
+  </div>
+
+  <div class="main" *ngIf="user as u">
+    <h2>Mon Compte</h2>
+    <p>Informations sur l'utilisateur</p>
+
+    <ng-container *ngIf="!isEditing; else editForm">
+      <span>Nom d'utilisateur: {{u.firstName}} {{u.lastName}}</span><br>
+      <span>Email: {{u.email}}</span>
+      <div>
+        <button class="secondary" (click)="startEdit()">Modifier le nom</button>
+        <button class="secondary" (click)="changePassword()">Changer le mot de passe</button>
+        <button class="btn-danger" (click)="logout()">Se Déconnecter</button>
+      </div>
+    </ng-container>
+
+    <ng-template #editForm>
+      <form (ngSubmit)="save()" novalidate>
+        <div class="sub-main">
+          <div>
+            <label for="firstName" [class.text-danger]="errors.firstName">Prénom</label>
+            <input [disabled]="isSaving" id="firstName" type="text" class="form-control" [(ngModel)]="form.firstName" name="firstName" (keypress)="common.validateKey($event,allowedKeys,letterRegex)" (paste)="common.validatePaste($event,letterRegex)"/>
+          </div>
+
+          <div>
+            <label for="lastName" [class.text-danger]="errors.lastName">Nom</label>
+            <input [disabled]="isSaving" id="lastName" type="text" class="form-control" [(ngModel)]="form.lastName" name="lastName" (keypress)="common.validateKey($event,allowedKeys,letterRegex)" (paste)="common.validatePaste($event,letterRegex)"/>
+          </div>
+        </div>
+
+        <div>
+          <button class="primary" type="submit" [disabled]="isSaving">Enregistrer</button>
+          <button class="secondary" type="button" (click)="cancelEdit()" [disabled]="isSaving">Annuler</button>
+        </div>
+
+        <div class="error border-danger" *ngIf="errors.global">
+          <span class="text-danger">{{ errors.global }}</span>
+        </div>
+      </form>
+    </ng-template>
+  </div>
+</div>

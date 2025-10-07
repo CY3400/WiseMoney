@@ -1,0 +1,48 @@
+.main div {
+    text-align: start;
+}
+@media (max-width: 992px) {
+    .main, .error {
+        width: 60%;
+    }
+}
+
+@media (max-width: 768px) {
+    .main, .error {
+        width: 80%;
+    }
+}
+
+@media (max-width: 576px) {
+    .main, .error {
+        width: 100%;
+    }
+
+    .main {
+        height: 70%;
+    }
+
+    .sub-main {
+        flex-direction: column;
+    }
+
+    .sub-main div {
+        width: 60%;
+    }
+}
+
+@media (max-width: 360px) {
+    .sub-main div {
+        width: 100%;
+    }
+
+    .main, .error {
+        border: none;
+    }
+}
+
+@media (min-width: 1200px) {
+    .main, .error {
+        width: 40%;
+    }
+}

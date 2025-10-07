@@ -1,0 +1,5 @@
+<app-header *ngIf="showHeader()"></app-header>
+
+<main class="app-content" [class.has-header]="showHeader()">
+    <router-outlet></router-outlet>
+</main>

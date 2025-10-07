@@ -1,0 +1,21 @@
+<div class="center-page">
+    <div class="error border-danger" *ngIf="hasErrors()">
+        <span *ngIf="errors.amount" class="text-danger">{{ errors.amount }}</span>
+    </div>
+
+    <div class="main">
+        <h2>Budget</h2>
+        <p>{{total == 0 ? 'Ajoutez votre budget' : 'Modifiez votre budget'}}</p>
+        <form #form="ngForm" (ngSubmit)="onSubmit(form)">
+            <div>
+                <label for="budget" [class.text-danger]="errors.amount">Budget</label>
+                <input [disabled]="isSubmitting" id="budget" name="budget" type="text" [(ngModel)]="budget.amount" class="form-control" [class.border-danger]="errors.amount" (keydown)="common.validateNextValueKeydown($event,numberRegex,allowedKeys)" (paste)="common.validateNextValuePaste($event,numberRegex)"/>
+            </div>
+
+            <button class="primary" type="submit" *ngIf="total == 0; else hasBudget" [disabled]="isSubmitting" [attr.aria-busy]="isSubmitting">{{ isSubmitting ? 'Ajout...' : 'Ajouter'}}</button>
+            <ng-template #hasBudget>
+                <button class="secondary" type="button" (click)="onUpdate(form)" [disabled]="isSubmitting" [attr.aria-busy]="isSubmitting">{{ isSubmitting ? 'Modification...' : 'Modifier'  }}</button>
+            </ng-template>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,85 @@
+<div class="center-page">
+    <div class="main">
+        <h2>Gestion du Budget</h2>
+        <p>Gérez votre budget en fonction des catégories</p>
+
+        <table class="table categories">
+            <colgroup>
+                <col style="width: 25%;">
+                <col style="width: 25%;">
+                <col style="width: 25%;">
+                <col style="width: 25%;">
+            </colgroup>
+            <thead>
+                <tr>
+                    <th class="tableName">Nom</th>
+                    <th class="tableType">Type</th>
+                    <th class="tableAmount">Montant</th>
+                    <th class="tableModify">Modifier</th>
+                </tr>
+            </thead>
+            <tbody *ngIf="pagedGroups.length; else emptyState">
+                <ng-container *ngFor="let g of pagedGroups; trackBy: trackByGroup">
+                    <tr class="group">
+                        <td colspan="4">
+                            {{g.parentLabel}}
+                        </td>
+                    </tr>
+
+                    <tr *ngFor="let r of g.items; trackBy: trackByCat">
+                        <td class="cat">{{r.categoryLabel}}</td>
+                        <td>
+                            <select [(ngModel)]="r.editType">
+                                <option value="LBP">LBP</option>
+                                <option value="%">%</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input [(ngModel)]="r.editAmount" type="number" [attr.min]="0" [attr.max]="r.editType === '%' ? 100 : null" [step]="r.editType === '%' ? '1' : '0.01'" required />
+                            <div class="field-error" *ngIf="!isRowValid(r)">
+                                <ng-container *ngIf="r.editAmount === ''">Le montant est requis.</ng-container>
+                                <ng-container *ngIf="r.editAmount !== '' && (Number(r.editAmount) < 0)">Le montant doit être ≥ 0.</ng-container>
+                                <ng-container *ngIf="r.editType === '%' && Number(r.editAmount) > 100">Le % ne peut pas dépasser 100.</ng-container>
+                            </div>
+                        </td>
+                        <td>
+                            <button class="secondary" type="button" (click)="saveRow(r)" [disabled]="r.saving || !isRowDirty(r) || !isRowValid(r)">
+                                {{ r.saving ? '...' : 'Modifier' }}
+                            </button>
+                        </td>
+                    </tr>
+                </ng-container>
+            </tbody>
+
+            <ng-template #emptyState>
+                <tbody>
+                    <tr>
+                        <td class="emptyState" colspan="4">
+                            Aucune catégorie disponible
+                        </td>
+                    </tr>
+                </tbody>
+            </ng-template>
+        </table>
+
+        <div class="pager">
+            <div class="left">
+                <label>
+                    Par page
+                    <select [ngModel]="pageSize" (ngModelChange)="setPageSize($event)">
+                        <option *ngFor="let s of pageSizes" [ngValue]="s">{{ s }}</option>
+                    </select>
+                </label>
+                <span>{{ pageIndex * pageSize + 1 }} – {{ Math.min((pageIndex + 1) * pageSize, total) }} sur {{ total }}</span>
+            </div>
+
+            <div class="right">
+                <button class="primary" type="button" (click)="goToPage(0)" [disabled]="pageIndex === 0">«</button>
+                <button class="secondary" type="button" (click)="prev()" [disabled]="pageIndex === 0">‹</button>
+                <span>Page {{ pageIndex + 1 }} / {{ totalPages }}</span>
+                <button class="secondary" type="button" (click)="next()" [disabled]="pageIndex >= totalPages - 1">›</button>
+                <button class="primary" type="button" (click)="goToPage(totalPages - 1)" [disabled]="pageIndex >= totalPages - 1">»</button>
+            </div>
+        </div>
+    </div>
+</div>

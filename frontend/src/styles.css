@@ -1,0 +1,405 @@
+:root {
+    --header-h: 60px;
+    --focus-ring: #1D14A2;
+}
+
+.app-content {
+    min-height: 100dvh;
+    padding-top: 0;
+}
+
+.app-content.has-header {
+    min-height: calc(100dvh - var(--header-h));
+    padding-top: var(--header-h);
+}
+
+.app-content :where(a, .main button):focus-visible{
+    outline: none;
+    box-shadow: 0 0 0 3px var(--focus-ring);
+    border-radius: 10px;
+}
+
+.app-content .center-page {
+    min-height: 100dvh;
+}
+
+.app-content.has-header .center-page {
+    min-height: calc(100dvh - var(--header-h));
+}
+
+.center-page{
+    min-height: calc(100dvh - var(--header-h));
+    display: grid;
+    place-items: center;
+    padding: 16px;
+}
+
+router-outlet {
+    display: contents;
+}
+
+.app-content a {
+    color:#1D14A2;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.main input:focus-visible, .main select:focus-visible, .main textarea:focus-visible{
+    outline: none;
+    box-shadow: 0 0 0 3px var(--focus-ring);
+    border-color: var(--focus-ring);
+}
+
+.main form {
+    width: 100%;
+}
+
+.main form > div {
+    margin-bottom: 15px;
+}
+
+body{
+    background-image: url("assets/Pictures/FD1.png");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-attachment: fixed;
+}
+
+.main button {
+    padding: 10px 20px;
+    margin-top: 10px;
+    font-weight: bold;
+    color: white;
+    border-color: white;
+    cursor: pointer;
+    width: 20%;
+    min-width: 150px;
+    margin: 10px 0px;
+}
+
+.main button:hover {
+    opacity: 0.5;
+}
+
+.main button[disabled]{
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+h2, label {
+    color: #1D14A2;
+    font-weight: bold;
+}
+
+.main input, .main select, .main textarea {
+    width: 100%;
+    font-size: 18px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    margin: 10px 0;
+}
+
+p {
+    color: #AFACAC;
+}
+
+#rd4, .rd4 {
+    position: relative;
+    text-align: left;
+}
+.password-show, .password-hide {
+    position: absolute;
+    align-items: end;
+    top: 50%;
+    cursor: pointer;
+}
+
+.rd4 svg, #rd4 svg {
+    height: 20px;
+    width: 25px;
+}
+#rd4 div, .rd4 div {
+    width: fit-content;
+    margin-left: 85%;
+}
+
+.mat-mdc-snack-bar-container.custom-toast .mdc-snackbar__surface {
+    background-color: #1D14A2 !important;
+    color: #FFF !important;
+    border-radius: 10px !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    margin-top: var(--header-h);
+}
+
+.mat-mdc-snack-bar-container.custom-toast .mdc-snackbar__label {
+    color: #FFF !important;
+    font-weight: 600;
+    letter-spacing: .2px;
+}
+
+.mat-mdc-snack-bar-container.custom-toast .mat-mdc-snack-bar-action .mdc-button {
+    min-width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    padding: 0 10px;
+}
+
+.mat-mdc-snack-bar-container.custom-toast .mat-mdc-snack-bar-action .mdc-button__label {
+    color: #FFF !important;
+    font-size: 18px;
+    line-height: 1;
+}
+.main span {
+    font-weight: bold;
+    font-size: 20px;
+    color: #1D14A2;
+}
+
+.border-danger {
+    border: 1px solid red;
+}
+
+.btn-danger {
+    background-color: red;
+    color: white;
+}
+
+.error{
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    width: 40%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background-color: #F8D7DA;
+    font-weight: bold;
+}
+
+.hide {
+    display: none;
+}
+
+.main {
+    border: 3px solid #1D14A2;
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    width: min(520px, 90%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 20px;
+}
+
+.top-left{
+    position:absolute;
+    top:55px;
+    left:20px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+}
+
+.primary {
+    background-color: #1D14A2;
+}
+
+.secondary {
+    background-color: #12E5EC;
+}
+
+.sub-main {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sub-main div {
+    display: flex;
+    flex-direction: column;
+    text-align: start;
+    width: 45%;
+}
+
+.text-danger {
+    color: red;
+}
+
+@media (max-width: 992px) {
+    .main, .error {
+        width: 50%;
+    }
+}
+
+@media (max-width: 768px) {
+    .main, .error {
+        width: 70%;
+    }
+}
+
+@media (max-width: 576px) {
+    .main, .error {
+        width: 100%;
+    }
+
+    .main {
+        height: 70%;
+    }
+
+    .sub-main {
+        flex-direction: column;
+    }
+
+    .sub-main div {
+        width: 60%;
+    }
+}
+
+@media (max-width: 360px) {
+    .sub-main div {
+        width: 100%;
+    }
+
+    .main, .error {
+        border: none;
+    }
+}
+
+@media (min-width: 1200px) {
+    .main, .error {
+        width: 30%;
+    }
+}
+html, body { height: 100%; }
+body, textarea { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+textarea{
+    width: 100%;
+}
+
+/* 1) textarea full width + pas de resize */
+textarea.form-control {
+  width: 100%;
+  box-sizing: border-box;
+  resize: none;
+  /* optionnel si tu veux une hauteur fixe */
+  min-height: 120px;
+}
+
+/* 2) si Notes reste dans .sub-main, autoriser le retour à la ligne */
+.sub-main {
+  flex-wrap: wrap;
+}
+
+/* 3) une classe utilitaire pour forcer la ligne complète */
+.sub-main .full {
+  flex: 0 0 100%;
+  width: 100%;
+}
+
+.table.categories {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    padding: 8px;
+}
+
+.tableActions {
+    width: 240px;
+}
+
+.group td {
+    padding: 10px 8px;
+    font-weight: 600;
+    background: rgba(0,0,0,0.04);
+}
+
+td > input, td > textarea, td > select {
+    background: transparent;
+}
+
+.editName {
+    padding: 6px 8px;
+}
+
+.btns {
+    padding:6px 8px;
+    gap:8px;
+    align-items:center;
+}
+
+.left {
+    width: 20%;
+}
+
+.emptyState {
+    padding:12px 8px;
+    text-align:center;
+    color:#666;
+}
+
+table, th, td {
+  border-color: red;
+}
+
+th {
+  background-color: #12E5EC;
+  color: #1D14A2;
+}
+
+thead,
+tbody,
+tr,
+td,
+th {
+  border-color: inherit;
+  border-style: solid;
+  border-width: 0;
+}
+
+.table {
+  --bs-table-color-type: initial;
+  --bs-table-bg-type: initial;
+  --bs-table-color-state: initial;
+  --bs-table-bg-state: initial;
+  --bs-table-color: var(--bs-emphasis-color);
+  --bs-table-bg: var(--bs-body-bg);
+  --bs-table-border-color: #1D14A2;
+  --bs-table-accent-bg: transparent;
+  --bs-table-striped-color: var(--bs-emphasis-color);
+  --bs-table-striped-bg: rgba(var(--bs-emphasis-color-rgb), 0.05);
+  --bs-table-active-color: var(--bs-emphasis-color);
+  --bs-table-active-bg: rgba(var(--bs-emphasis-color-rgb), 0.1);
+  --bs-table-hover-color: var(--bs-emphasis-color);
+  --bs-table-hover-bg: rgba(var(--bs-emphasis-color-rgb), 0.075);
+  width: 100%;
+  margin-bottom: 1rem;
+  vertical-align: top;
+  border-color: var(--bs-table-border-color);
+}
+.table > :not(caption) > * > * {
+  padding: 0.5rem 0.5rem;
+  border-bottom-width: 2px;
+  box-shadow: inset 0 0 0 9999px var(--bs-table-bg-state, var(--bs-table-bg-type, var(--bs-table-accent-bg)));
+}
+.table > tbody {
+  vertical-align: inherit;
+}
+.table > thead {
+  vertical-align: bottom;
+}
+
+.table > :not(caption) > * {
+  border-width: 1px 0 1px 0;
+}
+.table > :not(caption) > * > * {
+  border-width: 0 1px 0 1px;
+}
