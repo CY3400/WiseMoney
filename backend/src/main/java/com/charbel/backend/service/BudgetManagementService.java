@@ -61,7 +61,7 @@ public class BudgetManagementService {
             throw new IllegalArgumentException("Catégorie requise");
         }
 
-        if(amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+        if(amount == null || amount.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Montant requis");
         }
 

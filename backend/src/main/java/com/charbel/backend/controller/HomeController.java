@@ -1,0 +1,56 @@
+package com.charbel.backend.controller;
+
+import org.springframework.security.core.Authentication;
+
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.charbel.backend.DTO.ChildPercentView;
+import com.charbel.backend.DTO.ParentSpendView;
+import com.charbel.backend.model.Users;
+import com.charbel.backend.service.TransactionService;
+import com.charbel.backend.service.UserService;
+
+@RestController
+@RequestMapping("/home")
+public class HomeController {
+    private final UserService userService;
+    private final TransactionService transactionService;
+
+    public HomeController(UserService userService, TransactionService transactionService) {
+        this.userService = userService;
+        this.transactionService = transactionService;
+    }
+
+    @GetMapping("/percent")
+    public ResponseEntity<Integer> getCurrentMonthPercent(Authentication auth) {
+        Users user = userService.currentUser(auth);
+
+        Integer percent = transactionService.getCurrentMonthPercent(user);
+
+        return ResponseEntity.ok(percent);
+    }
+
+    @GetMapping("/PSV")
+    public ResponseEntity<List<ParentSpendView>> getPSV(Authentication auth) {
+        Users user = userService.currentUser(auth);
+
+        List<ParentSpendView> out = transactionService.getParentSpendView(user);
+
+        return ResponseEntity.ok(out);
+    }
+
+    @GetMapping("/CPV/{parentId}")
+    public ResponseEntity<List<ChildPercentView>> getCPV(Authentication auth, @PathVariable Long parentId) {
+        Users user = userService.currentUser(auth);
+
+        List<ChildPercentView> out = transactionService.getChildPercentView(user, parentId);
+
+        return ResponseEntity.ok(out);
+    }
+}

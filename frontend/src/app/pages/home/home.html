@@ -1,5 +1,51 @@
-<!-- <app-header></app-header> -->
 <div *ngIf="user as u" class="top-left">
   <h2>Bienvenue {{ u.firstName }} {{ u.lastName }}</h2>
-  Content de te voir ici
+</div>
+
+<div class="center-page">
+  <div class="main">
+    <div class="circular-progress" [style.background]="conicBackground">
+      <div class="value-container" [style.color]="progressColor">
+        {{percent}}%
+      </div>
+      <div class="inner-ring"></div>
+    </div>
+
+    <div class="section-title">Dépenses par catégorie</div>
+
+    <div *ngIf="loadingPSV" class="hint">Chargement...</div>
+    <div *ngIf="!loadingPSV && psv.length === 0" class="hint">
+      Aucune dépense ce mois-ci.
+    </div>
+
+    <div class="parent-row" *ngFor="let p of psv; trackBy: trackByParent">
+      <button class="parent-line" type="button" (click)="onToggleParent(p)" [attr.aria-expanded]="isExpanded(p.name)">
+        <span class="chevron" [class.open]="isExpanded(p.name)"></span>
+        <span class="parent-name">{{ p.name }}</span>
+        <div class="bar-container">
+          <div class="bar">
+            <div class="fill" [style.width.%]="p.total" [style.background]="barColor(p.total)"></div>
+          </div>
+          <span class="parent-value">{{ p.total }}%</span>
+        </div>
+      </button>
+
+      <div class="collapse-body" [class.open]="isExpanded(p.name)">
+        <div *ngIf="loadingChildren.has(p.parentId)" class="hint">Chargement...</div>
+        <div *ngIf="!loadingChildren.has(p.parentId) && (childrenMap.get(p.parentId)?.length || 0) === 0" class="hint">
+          Aucun enfant ce mois-ci.
+        </div>
+
+        <div class="child-row" *ngFor="let ch of (childrenMap.get(p.parentId) || []); trackBy: trackByChild">
+          <span class="parent-name">{{ ch.name }}</span>
+          <div class="bar-container">
+            <div class="bar">
+              <div class="fill" [style.width.%]="ch.percent" [style.background]="barColor(ch.percent)"></div>
+            </div>
+            <span class="parent-value">{{ ch.percent }}%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

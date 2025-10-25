@@ -1,8 +1,7 @@
-import { Component, OnInit } from '@angular/core';
-import { Api } from '../../services/api';
+import { Component, OnInit, TrackByFunction } from '@angular/core';
+import { Api, PSV, CPV } from '../../services/api';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { Header } from '../header/header';
 
 @Component({
   selector: 'app-home',
@@ -11,11 +10,143 @@ import { Header } from '../header/header';
   templateUrl: './home.html',
   styleUrls: ['./home.css','../../../styles.css']
 })
-export class Home {
+export class Home implements OnInit {
   user: any = null;
+  percent: number = 0;
+  progressColor: string = '#bfbfbf';
+  conicBackground = 'conic-gradient(#bfbfbf 0%, #e6e6e6 0%)';
+  psv: PSV[] = [];
+  loadingPSV = false;
+  expandedNames = new Set<string>();
+  childrenMap = new Map<number, CPV[]>();
+  loadingChildren = new Set<number>();
+  trackByParent: TrackByFunction<PSV> = (_: number, item: PSV) => (item?.parentId as number) ?? (item?.name as string);
+  trackByChild: TrackByFunction<CPV> = (_: number, item: CPV) => (item?.childId as number) ?? (item?.name as string);
 
   constructor(private api: Api, private router: Router, private route: ActivatedRoute) {
     this.user = this.route.snapshot.data['me'];
+  }
+
+  ngOnInit(): void {
+    this.loadPercent();
+    this.loadPSV();
+  }
+
+  loadPercent(): void {
+    this.api.getCurrentPercentMonth().subscribe({
+      next: (res:number) => {
+        this.percent = res ?? 0;
+        this.updateProgressColor();
+        this.updateConicBackground();
+      },
+      error: (err) => {
+        console.error('Erreur lors du chargement du pourcentage :', err);
+        this.percent = 0;
+        this.updateProgressColor();
+        this.updateConicBackground();
+      }
+    });
+  }
+
+  updateProgressColor(): void {
+    if (this.percent === 0) {
+      this.progressColor = '#bfbfbf';
+    }
+    else if (this.percent <= 25) {
+      this.progressColor = '#2ecc71';
+    }
+    else if (this.percent <= 50) {
+      this.progressColor = '#f1c40f';
+    }
+    else if (this.percent <= 75) {
+      this.progressColor = '#e67e22';
+    }
+    else {
+      this.progressColor = '#e74c3c';
+    }
+  }
+
+  updateConicBackground(): void {
+    this.conicBackground = `conic-gradient(${this.progressColor} ${this.percent}%, #e6e6e6 0)`;
+  }
+
+  loadPSV(): void {
+    this.loadingPSV = true;
+    this.api.getPSV().subscribe({
+      next: (rows) => {
+        this.psv = (rows ?? [])
+          .map(r => ({
+            parentId: Number((r as any).parentId ?? (r as any).parent_id ?? 0),
+            name: String(r.name),
+            total: r.total
+          }))
+          .sort((a, b) => b.total - a.total);
+
+        this.loadingPSV = false;
+      },
+      error: (err) => {
+        console.error('Erreur getPSV():', err);
+        this.psv = [];
+        this.loadingPSV = false;
+      }
+    });
+  }
+
+  barColor(p: number): string {
+    if (p === 0) return '#bfbfbf';
+    if (p <= 25) return '#2ecc71';
+    if (p <= 50) return '#f1c40f';
+    if (p <= 75) return '#e67e22';
+    return '#e74c3c';
+  }
+
+  onToggleParent(p: PSV): void {
+    const wasOpen = this.isExpanded(p.name);
+    this.toggleExpand(p.name);
+
+    if(!wasOpen) {
+      if (!p.parentId) {
+        console.warn('parentId manquant pour ', p);
+        return;
+      }
+      if (!this.childrenMap.has(p.parentId) && !this.loadingChildren.has(p.parentId)) {
+        this.loadChildrenForParent(p.parentId);
+      }
+    }
+  }
+
+  private loadChildrenForParent(parentId: number): void {
+    this.loadingChildren.add(parentId);
+    this.api.getCPV(parentId).subscribe({
+      next: (rows) => {
+        const list: CPV[] = (rows ?? []).map(r => ({
+          childId: Number((r as any).childId ?? (r as any).child_id ?? 0),
+          name: String(r.name),
+          amount: Number(r.amount ?? 0),
+          percent: Number(r.percent)
+        }));
+        this.childrenMap.set(parentId, list);
+        this.loadingChildren.delete(parentId);
+      },
+      error: (err) => {
+        console.error(`Erreur getChildrenPercents(${parentId}):`, err);
+        this.childrenMap.set(parentId, []);
+        this.loadingChildren.delete(parentId);
+      }
+    });
+  }
+
+  toggleExpand(name: string): void {
+    if(this.expandedNames.has(name)){
+      this.expandedNames.delete(name);
+    }
+    else {
+      this.expandedNames.add(name);
+    }
+  }
+
+  isExpanded(name: string): boolean {
+    return this.expandedNames.has(name);
   }
 
   logout(): void {

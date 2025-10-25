@@ -85,6 +85,19 @@ import { Observable, map } from 'rxjs';
     type: string;
   }
 
+  export type PSV = {
+    parentId: number;
+    name: string;
+    total: number;
+  }
+
+  export type CPV = {
+    childId: number;
+    name: string;
+    amount: number;
+    percent: number;
+  }
+
 @Injectable({
   providedIn: 'root'
 })
@@ -260,5 +273,23 @@ export class Api {
 
   getBudgetManagement(): Observable<GestionBudgetDto[]> {
     return this.http.get<GestionBudgetDto[]>(`${this.baseUrl}/management`, { withCredentials: true });
+  }
+
+  getCurrentPercentMonth(): Observable<number> {
+    return this.http.get<number>(`${this.baseUrl}/home/percent`, {
+      withCredentials: true
+    });
+  }
+
+  getPSV(): Observable<PSV[]> {
+    return this.http.get<PSV[]>(`${this.baseUrl}/home/PSV`, {
+      withCredentials: true
+    })
+  }
+
+  getCPV(parentId: number): Observable<CPV[]> {
+    return this.http.get<CPV[]>(`${this.baseUrl}/home/CPV/${parentId}`, {
+      withCredentials: true
+    })
   }
 }

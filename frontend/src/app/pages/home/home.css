@@ -1,0 +1,135 @@
+.circular-progress {
+    position: relative;
+    height: 180px;
+    width: 180px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    transition: background 0.6s ease;
+}
+
+.inner-ring {
+  position: absolute;
+  width: 140px;
+  height: 140px;
+  background: #E4F6FF;
+  border-radius: 50%;
+  z-index: 1;
+}
+
+.value-container {
+    position: absolute;
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--progressColor, #191f5a);
+    z-index: 2;
+    pointer-events: none;
+}
+
+.main {
+    align-items: center;
+}
+
+.section-title {
+    margin: 24px 0 12px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #191f5a;
+}
+
+.hint {
+    color: #777;
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+}
+
+.parent-row {
+  margin-bottom: 14px;
+  width: 100%;
+}
+
+.parent-line {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 22px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.parent-name {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.bar-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 50%;
+}
+
+.bar {
+  position: relative;
+  width: 350px;
+  height: 10px;
+  border-radius: 999px;
+  background: #e9e9ef;
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+
+.parent-value {
+  font-variant-numeric: tabular-nums;
+  color: #444;
+  min-width: 40px;
+  text-align: right;
+}
+
+.chevron {
+  width: 12px;
+  height: 12px;
+  border-right: 2px solid #666;
+  border-bottom: 2px solid #666;
+  transform: rotate(-45deg);
+  transition: transform .2s ease;
+  justify-self: center;
+}
+.chevron.open {
+  transform: rotate(45deg);
+}
+
+.collapse-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height .25s ease, opacity .25s ease;
+  opacity: 0;
+  padding-left: 34px;
+}
+.collapse-body.open {
+  max-height: 300px;
+  opacity: 1;
+  padding-top: 6px;
+  padding-bottom: 8px;
+}
+
+.child-placeholder {
+  color: #6b7280;
+  font-size: .92rem;
+}
+
+.child-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+}

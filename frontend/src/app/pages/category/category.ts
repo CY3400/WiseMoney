@@ -299,10 +299,10 @@ export class Category implements OnInit {
           panelClass: ['custom-toast']
         });
 
-        if (parentId) {
+        if (!parentId) {
           const budgetPayload = {
             category: createdCategory.id,
-            amount: '0.01',
+            amount: '0',
             type: 'LBP'
           } satisfies import('../../services/api').GestionBudgetRequest;
 

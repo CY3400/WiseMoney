@@ -8,6 +8,8 @@ import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.charbel.backend.DTO.ChildPercentView;
+import com.charbel.backend.DTO.ParentSpendView;
 import com.charbel.backend.model.Category;
 import com.charbel.backend.model.Transaction;
 import com.charbel.backend.model.Users;
@@ -95,5 +97,32 @@ public class TransactionService {
         repo.findByIdAndUser(id, user).orElseThrow(() -> new IllegalArgumentException("Transaction introuvable"));
 
         repo.deleteById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public Integer getCurrentMonthPercent(Users user) {
+        if(user == null) {
+            throw new IllegalArgumentException("Utilisateur requis");
+        }
+
+        return repo.findCurrentMonthPercentByUserId(user.getId());
+    }
+
+    @Transactional(readOnly = true)
+    public List<ParentSpendView> getParentSpendView(Users user) {
+        if(user == null) {
+            throw new IllegalArgumentException("Utilisateur requis");
+        }
+
+        return repo.findParentSpendViewByUserId(user.getId());
+    }
+
+    @Transactional(readOnly = true)
+    public List<ChildPercentView> getChildPercentView(Users user, Long parentId) {
+        if(user == null) {
+            throw new IllegalArgumentException("Utilisateur requis");
+        }
+
+        return repo.findChildrenSpendViewByUserId(user.getId(), parentId);
     }
 }
