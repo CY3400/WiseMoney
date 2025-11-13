@@ -299,7 +299,7 @@ export class Category implements OnInit {
           panelClass: ['custom-toast']
         });
 
-        if (!parentId) {
+        if (parentId && type == 'DEPENSE') {
           const budgetPayload = {
             category: createdCategory.id,
             amount: '0',

@@ -292,4 +292,10 @@ export class Api {
       withCredentials: true
     })
   }
+
+  getEpargne(): Observable<number> {
+    return this.http.get<number>(`${this.baseUrl}/home/Epargne`, {
+      withCredentials: true
+    })
+  }
 }

@@ -125,4 +125,13 @@ public class TransactionService {
 
         return repo.findChildrenSpendViewByUserId(user.getId(), parentId);
     }
+
+    @Transactional(readOnly = true)
+    public Integer getEpargneForMonth(Users user) {
+        if(user == null) {
+            throw new IllegalArgumentException("Utilisateur requis");
+        }
+
+        return repo.getEpargneOfMonth(user.getId());
+    }
 }

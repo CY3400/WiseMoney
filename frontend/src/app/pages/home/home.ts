@@ -17,6 +17,7 @@ export class Home implements OnInit {
   conicBackground = 'conic-gradient(#bfbfbf 0%, #e6e6e6 0%)';
   psv: PSV[] = [];
   loadingPSV = false;
+  epargne = 0;
   expandedNames = new Set<string>();
   childrenMap = new Map<number, CPV[]>();
   loadingChildren = new Set<number>();
@@ -30,6 +31,7 @@ export class Home implements OnInit {
   ngOnInit(): void {
     this.loadPercent();
     this.loadPSV();
+    this.loadEpargne();
   }
 
   loadPercent(): void {
@@ -90,6 +92,18 @@ export class Home implements OnInit {
         this.loadingPSV = false;
       }
     });
+  }
+
+  loadEpargne(): void {
+    this.api.getEpargne().subscribe({
+      next: (ep) => {
+        this.epargne = ep ?? 0;
+      },
+      error: (err) => {
+        console.error('Erreur getEpargne():', err);
+        this.epargne = 0;
+      }
+    })
   }
 
   barColor(p: number): string {

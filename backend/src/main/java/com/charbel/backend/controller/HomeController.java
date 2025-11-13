@@ -53,4 +53,13 @@ public class HomeController {
 
         return ResponseEntity.ok(out);
     }
+
+    @GetMapping("/Epargne")
+    public ResponseEntity<Integer> getEpargne(Authentication auth) {
+        Users user = userService.currentUser(auth);
+
+        Integer epargne = transactionService.getEpargneForMonth(user);
+
+        return ResponseEntity.ok(epargne);
+    }
 }
