@@ -2,12 +2,14 @@ package com.charbel.backend.service;
 
 import java.math.BigDecimal;
 import java.time.YearMonth;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.charbel.backend.DTO.StatisticsViews;
 import com.charbel.backend.model.Budget;
 import com.charbel.backend.model.Users;
 import com.charbel.backend.repo.BudgetRepo;
@@ -75,5 +77,14 @@ public class BudgetService {
         if(!repo.existsByUserAndMonthAndYear(user, m, y)) {
             repo.findTopByUserOrderByYearDescMonthDesc(user).ifPresent(last -> createBudget(user, last.getAmount()));
         }
+    }
+
+    @Transactional(readOnly = true)
+    public List<StatisticsViews> getLastSixMonthsStatistics(Users user) {
+        if(user == null) {
+            throw new IllegalArgumentException("Utilisateur requis");
+        }
+
+        return repo.getLastSixMonthsStatistics(user.getId());
     }
 }

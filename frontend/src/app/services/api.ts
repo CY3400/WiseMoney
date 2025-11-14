@@ -98,6 +98,24 @@ import { Observable, map } from 'rxjs';
     percent: number;
   }
 
+  export type SMStats = {
+    month: number;
+    year: number;
+    expenses: string | number;
+    revenues: string | number;
+    savings: string | number;
+  }
+
+  export type Top = {
+    name: string;
+    total: string;
+  }
+
+  export type Gap = {
+    currentAmount: string;
+    gap: number;
+  }
+
 @Injectable({
   providedIn: 'root'
 })
@@ -295,6 +313,30 @@ export class Api {
 
   getEpargne(): Observable<number> {
     return this.http.get<number>(`${this.baseUrl}/home/Epargne`, {
+      withCredentials: true
+    })
+  }
+
+  getSixMonthsStats(): Observable<SMStats[]> {
+    return this.http.get<SMStats[]>(`${this.baseUrl}/stats/sixMonths`, {
+      withCredentials: true
+    })
+  }
+
+  getTopByMonth(): Observable<Top[]> {
+    return this.http.get<Top[]>(`${this.baseUrl}/stats/topByMonth`, {
+      withCredentials: true
+    })
+  }
+
+  getGapOfMonth(): Observable<Gap[]> {
+    return this.http.get<Gap[]>(`${this.baseUrl}/stats/gap`, {
+      withCredentials: true
+    })
+  }
+
+  getExpensesRevenuesDifference(): Observable<SMStats[]> {
+    return this.http.get<SMStats[]>(`${this.baseUrl}/stats/ExpRevDiff`, {
       withCredentials: true
     })
   }

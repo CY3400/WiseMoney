@@ -6,6 +6,7 @@ import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.charbel.backend.DTO.TopExpensesByMonth;
 import com.charbel.backend.model.Category;
 import com.charbel.backend.model.CategoryType;
 import com.charbel.backend.model.Users;
@@ -102,7 +103,6 @@ public class CategoryService {
                     : repo.findByUserAndParentIsNullOrderByNameAsc(user);
         }
 
-        // Construire la liste des types à inclure
         List<CategoryType> types = switch (type) {
             case DEPENSE -> List.of(CategoryType.DEPENSE, CategoryType.LES_2);
             case REVENU  -> List.of(CategoryType.REVENU,  CategoryType.LES_2);
@@ -131,5 +131,14 @@ public class CategoryService {
 
         existing.setStatus(existing.getStatus() == 0 ? 1 : 0);
         return repo.save(existing);
+    }
+
+    @Transactional(readOnly = true)
+    public List<TopExpensesByMonth> getTopExpensesByMonths(Users user) {
+        if(user == null) {
+            throw new IllegalArgumentException("Utilisateur requis");
+        }
+
+        return repo.getTopExpensesByMonths(user.getId());
     }
 }

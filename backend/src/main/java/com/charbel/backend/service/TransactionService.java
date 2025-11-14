@@ -10,6 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.charbel.backend.DTO.ChildPercentView;
 import com.charbel.backend.DTO.ParentSpendView;
+import com.charbel.backend.DTO.PercentGap;
+import com.charbel.backend.DTO.StatisticsViews;
 import com.charbel.backend.model.Category;
 import com.charbel.backend.model.Transaction;
 import com.charbel.backend.model.Users;
@@ -133,5 +135,23 @@ public class TransactionService {
         }
 
         return repo.getEpargneOfMonth(user.getId());
+    }
+
+    @Transactional(readOnly = true)
+    public List<PercentGap> getGapForMonth(Users user) {
+        if(user == null) {
+            throw new IllegalArgumentException("Utilisateur requis");
+        }
+
+        return repo.getGapOfMonth(user.getId());
+    }
+
+    @Transactional(readOnly = true)
+    public List<StatisticsViews> getExpensesRevenuesDifference(Users user) {
+        if(user == null) {
+            throw new IllegalArgumentException("Utilisateur requis");
+        }
+
+        return repo.getExpensesRevenuesDifference(user.getId());
     }
 }

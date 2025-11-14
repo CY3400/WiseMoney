@@ -12,6 +12,8 @@ import org.springframework.stereotype.Repository;
 
 import com.charbel.backend.DTO.ChildPercentView;
 import com.charbel.backend.DTO.ParentSpendView;
+import com.charbel.backend.DTO.PercentGap;
+import com.charbel.backend.DTO.StatisticsViews;
 import com.charbel.backend.model.CategoryType;
 import com.charbel.backend.model.Transaction;
 import com.charbel.backend.model.Users;
@@ -132,4 +134,34 @@ public interface TransactionRepo extends JpaRepository<Transaction, Long> {
         WHERE b.user_id = 1 AND b.month = EXTRACT(MONTH FROM SYSDATE()) AND b.year = EXTRACT(YEAR FROM SYSDATE());
         """, nativeQuery = true)
         Integer getEpargneOfMonth(@Param("userId") Long userId);
+
+        @Query(value="""
+        WITH CURRENT_MONTH AS (SELECT T.USER_ID, COALESCE(SUM(AMOUNT),0) AS CURRENT_AMOUNT
+        FROM WISE_MONEY.TRANSACTIONS T
+        INNER JOIN WISE_MONEY.CATEGORIES C ON C.ID = T.CATEGORY_ID
+        WHERE T.USER_ID = :userId AND EXTRACT(MONTH FROM TRANSACTION_DATE) = EXTRACT(MONTH FROM SYSDATE())
+        AND EXTRACT(YEAR FROM TRANSACTION_DATE) = EXTRACT(YEAR FROM SYSDATE()) AND C.TYPE = 'DEPENSE'
+        GROUP BY T.USER_ID),
+        PAST_MONTH AS (SELECT T.USER_ID, COALESCE(SUM(AMOUNT), 1) AS PAST_AMOUNT
+        FROM WISE_MONEY.TRANSACTIONS T
+        INNER JOIN WISE_MONEY.CATEGORIES C ON C.ID = T.CATEGORY_ID
+        WHERE T.USER_ID = :userId AND C.TYPE = 'DEPENSE' AND ((EXTRACT(MONTH FROM TRANSACTION_DATE) = EXTRACT(MONTH FROM SYSDATE()) - 1 AND EXTRACT(MONTH FROM SYSDATE()) != 1
+        AND EXTRACT(YEAR FROM TRANSACTION_DATE) = EXTRACT(YEAR FROM SYSDATE()))
+        OR (EXTRACT(MONTH FROM SYSDATE()) = 1 AND EXTRACT(MONTH FROM TRANSACTION_DATE) = 12 AND EXTRACT(YEAR FROM TRANSACTION_DATE) = EXTRACT(YEAR FROM SYSDATE()) - 1))
+        GROUP BY T.USER_ID)
+        SELECT CM.CURRENT_AMOUNT, ROUND(CM.CURRENT_AMOUNT * 100 / PM.PAST_AMOUNT - 100, 0) AS GAP
+        FROM CURRENT_MONTH CM
+        INNER JOIN PAST_MONTH PM ON PM.USER_ID = CM.USER_ID;
+        """, nativeQuery = true)
+        List<PercentGap> getGapOfMonth(@Param("userId") Long userId);
+
+        @Query(value="""
+        SELECT MONTH, YEAR, SUM(CASE WHEN TYPE = 'DEPENSE' THEN AMOUNT ELSE 0 END) AS EXPENSES, SUM(CASE WHEN TYPE = 'REVENU' THEN AMOUNT ELSE 0 END) AS REVENUES
+        FROM (SELECT EXTRACT(MONTH FROM TRANSACTION_DATE) AS MONTH, EXTRACT(YEAR FROM TRANSACTION_DATE) AS YEAR, AMOUNT, TYPE
+        FROM WISE_MONEY.TRANSACTIONS T
+        INNER JOIN WISE_MONEY.CATEGORIES C ON C.ID = T.CATEGORY_ID
+        WHERE T.USER_ID = :userId) SUB
+        GROUP BY MONTH, YEAR;
+        """, nativeQuery = true)
+        List<StatisticsViews> getExpensesRevenuesDifference(@Param("userId") Long userId);
 }

@@ -12,6 +12,7 @@ import { Budget } from './pages/budget/budget';
 import { Category } from './pages/category/category';
 import { Transaction } from './pages/transaction/transaction';
 import { GestionBudget } from './pages/gestion-budget/gestion-budget';
+import { Statistics } from './pages/statistics/statistics';
 
 export const routes: Routes = [
     {path: '', component: Welcome, data: {public: true}},
@@ -26,5 +27,6 @@ export const routes: Routes = [
     { path:'budget', component: Budget, title:'WiseMoney - Budget' , resolve: {me: MeResolver}},
     { path:'categorie', component: Category, title:'WiseMoney - Category', resolve: {me: MeResolver}},
     { path:'transaction', component: Transaction, title:'WiseMoney - Transaction', resolve: {me: MeResolver}},
-    { path:'gestion-budget', component: GestionBudget, title:'WiseMoney - Gestion du Budget', resolve: {me: MeResolver}}
+    { path:'gestion-budget', component: GestionBudget, title:'WiseMoney - Gestion du Budget', resolve: {me: MeResolver}},
+    { path:'statistiques', component: Statistics, title:'WiseMoney - Statistiques', resolve: {me: MeResolver}}
 ];

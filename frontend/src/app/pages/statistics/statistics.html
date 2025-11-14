@@ -1,0 +1,37 @@
+<div class="stats-container">
+    <h2 class="stats-title">Statistiques des 6 derniers mois</h2>
+
+    <div class="chart-wrapper">
+        <canvas #barChart></canvas>
+    </div>
+
+    <h2 class="stats-title">Top 5 des dépenses du mois</h2>
+
+    <div class="chart-wrapper pie-wrapper">
+        <canvas #pieChart></canvas>
+    </div>
+
+    <h2 class="stats-title">Ecart avec le mois précédent</h2>
+    <div class="text-wrapper">
+        @if(gap !== 0){
+            <p>Dépenses ce mois-ci: {{currentAmount}} LBP</p>
+            <span>
+                @if(isPositive){
+                    📈 
+                }
+                @else {
+                    📉 
+                }
+                {{gap}}% par rapport au mois dernier!
+            </span>
+        }
+        @else {
+            Pas de données statistiques!!!
+        }
+    </div>
+
+    <h2 class="stats-title">Différence Revenus - Dépenses</h2>
+    <div class="chart-wrapper">
+        <canvas #lineChart></canvas>
+    </div>
+</div>
