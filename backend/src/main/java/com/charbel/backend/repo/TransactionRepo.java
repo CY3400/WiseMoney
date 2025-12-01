@@ -76,7 +76,7 @@ public interface TransactionRepo extends JpaRepository<Transaction, Long> {
                 WHERE t.user_id = :userId AND c_child.type != 'REVENU' AND EXTRACT(MONTH FROM t.transaction_date) = EXTRACT(MONTH FROM SYSDATE())
                 AND EXTRACT(YEAR FROM t.transaction_date) = EXTRACT(YEAR FROM SYSDATE())
                 GROUP BY t.user_id, p.id, p.name)
-                SELECT s.parent_id AS parentId, s.parent_name AS name, ROUND(100 * s.spent / NULLIF(a.parent_alloc, 0), 0) AS total
+                SELECT s.parent_id AS parentId, s.parent_name AS name, CASE WHEN ROUND(100 * s.spent / NULLIF(a.parent_alloc, 0), 0) > 100 THEN 100 ELSE ROUND(100 * s.spent / NULLIF(a.parent_alloc, 0), 0) END total
                 FROM spend_by_parent s
                 JOIN alloc_per_parent a ON a.user_id = s.user_id AND a.parent_id = s.parent_id
                 ORDER BY total DESC;
@@ -102,8 +102,8 @@ public interface TransactionRepo extends JpaRepository<Transaction, Long> {
                 WHERE t.user_id = :userId AND c.type = 'DEPENSE' AND EXTRACT(MONTH FROM t.transaction_date) = EXTRACT(MONTH FROM SYSDATE())
                 AND EXTRACT(YEAR FROM t.transaction_date) = EXTRACT(YEAR FROM SYSDATE()) AND c.parent_id = :parentId
                 GROUP BY t.user_id, child_id, parent_id, name)
-                SELECT sc.child_id AS childId, sc.name AS name, sc.amount AS amount, apc.child_alloc AS total,
-                ROUND(100 * sc.amount / NULLIF(apc.child_alloc, 0), 0) AS percent
+                SELECT sc.child_id AS childId, sc.name AS name, sc.amount AS amount, case when apc.child_alloc = 0 then sc.amount else apc.child_alloc end total,
+                ROUND(100 * sc.amount / case when apc.child_alloc = 0 then sc.amount else apc.child_alloc end, 0) AS percent
                 FROM spend_child sc
                 JOIN alloc_per_child apc ON apc.user_id = sc.user_id AND apc.child_id = sc.child_id
                 ORDER BY percent DESC;
@@ -114,24 +114,31 @@ public interface TransactionRepo extends JpaRepository<Transaction, Long> {
         WITH sum_lbp AS (SELECT bm.user_id, COALESCE(SUM(bm.amount),0) AS lbp_sum
         FROM wise_money.budget_management bm
         WHERE bm.type_allocation = 'LBP'
-        AND bm.user_id = 1
+        AND bm.user_id = :userId
         GROUP BY bm.user_id),
         alloc_total AS (SELECT bm.user_id,SUM(CASE WHEN bm.type_allocation = 'LBP' THEN bm.amount WHEN bm.type_allocation = 'PERCENT' THEN GREATEST(COALESCE(b.amount,0) - COALESCE(sl.lbp_sum,0), 0) * bm.amount / 100 ELSE 0 END) AS alloc_sum
         FROM wise_money.budget_management bm
         LEFT JOIN wise_money.budgets b ON b.user_id = bm.user_id AND b.month = EXTRACT(MONTH FROM SYSDATE()) AND b.year = EXTRACT(YEAR FROM SYSDATE())
         LEFT JOIN sum_lbp sl ON sl.user_id = bm.user_id
-        WHERE bm.user_id = 1
+        WHERE bm.user_id = :userId
         GROUP BY bm.user_id),
+        sum_dep AS (SELECT C.USER_ID, SUM(T.AMOUNT) AS DEPENSE
+        FROM WISE_MONEY.TRANSACTIONS T
+        INNER JOIN WISE_MONEY.CATEGORIES C ON C.ID = T.CATEGORY_ID
+        INNER JOIN WISE_MONEY.BUDGET_MANAGEMENT B ON B.CATEGORY_ID = C.ID
+        WHERE TYPE = 'DEPENSE' AND B.AMOUNT = 0 AND EXTRACT(MONTH FROM TRANSACTION_DATE) = EXTRACT(MONTH FROM SYSDATE()) AND EXTRACT(YEAR FROM TRANSACTION_DATE) = EXTRACT(YEAR FROM SYSDATE())
+        GROUP BY USER_ID),
         sum_revenu AS (SELECT C.USER_ID, SUM(T.AMOUNT) AS REVENU
         FROM WISE_MONEY.TRANSACTIONS T
         INNER JOIN WISE_MONEY.CATEGORIES C ON C.ID = T.CATEGORY_ID
         WHERE TYPE = 'REVENU' AND EXTRACT(MONTH FROM TRANSACTION_DATE) = EXTRACT(MONTH FROM SYSDATE()) AND EXTRACT(YEAR FROM TRANSACTION_DATE) = EXTRACT(YEAR FROM SYSDATE())
         GROUP BY USER_ID)
-        SELECT COALESCE(b.amount,0) - COALESCE(a.alloc_sum,0) + COALESCE(sr.revenu,0) AS epargne
+        SELECT COALESCE(b.amount,0) - COALESCE(a.alloc_sum,0) - COALESCE(sd.depense,0) + COALESCE(sr.revenu,0) AS epargne
         FROM wise_money.budgets b
         LEFT JOIN alloc_total a ON a.user_id = b.user_id
         LEFT JOIN sum_revenu sr ON sr.user_id = b.user_id
-        WHERE b.user_id = 1 AND b.month = EXTRACT(MONTH FROM SYSDATE()) AND b.year = EXTRACT(YEAR FROM SYSDATE());
+        LEFT JOIN sum_dep sd ON sd.user_id = b.user_id
+        WHERE b.user_id = :userId AND b.month = EXTRACT(MONTH FROM SYSDATE()) AND b.year = EXTRACT(YEAR FROM SYSDATE());
         """, nativeQuery = true)
         Integer getEpargneOfMonth(@Param("userId") Long userId);
 
