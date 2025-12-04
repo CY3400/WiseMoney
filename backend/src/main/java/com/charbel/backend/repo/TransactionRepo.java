@@ -76,7 +76,7 @@ public interface TransactionRepo extends JpaRepository<Transaction, Long> {
                 WHERE t.user_id = :userId AND c_child.type != 'REVENU' AND EXTRACT(MONTH FROM t.transaction_date) = EXTRACT(MONTH FROM SYSDATE())
                 AND EXTRACT(YEAR FROM t.transaction_date) = EXTRACT(YEAR FROM SYSDATE())
                 GROUP BY t.user_id, p.id, p.name)
-                SELECT s.parent_id AS parentId, s.parent_name AS name, CASE WHEN ROUND(100 * s.spent / NULLIF(a.parent_alloc, 0), 0) > 100 THEN 100 ELSE ROUND(100 * s.spent / NULLIF(a.parent_alloc, 0), 0) END total
+                SELECT s.parent_id AS parentId, s.parent_name AS name, COALESCE(CASE WHEN ROUND(100 * s.spent / NULLIF(a.parent_alloc, 0), 0) > 100 THEN 100 ELSE ROUND(100 * s.spent / NULLIF(a.parent_alloc, 0), 0) END, 100) total
                 FROM spend_by_parent s
                 JOIN alloc_per_parent a ON a.user_id = s.user_id AND a.parent_id = s.parent_id
                 ORDER BY total DESC;
