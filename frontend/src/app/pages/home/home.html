@@ -1,6 +1,8 @@
-<div *ngIf="user as u" class="top-left">
-  <h2>Bienvenue {{ u.firstName }} {{ u.lastName }}</h2>
-</div>
+@if(user){
+  <div class="top-left">
+    <h2>Bienvenue {{ user.firstName }} {{ user.lastName }}</h2>
+  </div>
+}
 
 <div class="center-page">
   <div class="main">
@@ -13,41 +15,96 @@
 
     <div class="section-title">Dépenses par catégorie</div>
 
-    <div *ngIf="loadingPSV" class="hint">Chargement...</div>
-    <div *ngIf="!loadingPSV && psv.length === 0" class="hint">
-      Aucune dépense ce mois-ci.
-    </div>
+    @if(loadingPSV){
+      <div class="hint">Chargement...</div>
+    }
+    
+    @if(!loadingPSV && psv.length === 0){
+      <div class="hint">
+        Aucune dépense ce mois-ci.
+      </div>
+    }
 
-    <div class="parent-row" *ngFor="let p of psv; trackBy: trackByParent">
-      <button class="parent-line" type="button" (click)="onToggleParent(p)" [attr.aria-expanded]="isExpanded(p.name)">
-        <span class="chevron" [class.open]="isExpanded(p.name)"></span>
-        <span class="parent-name">{{ p.name }}</span>
-        <div class="bar-container">
-          <div class="bar">
-            <div class="fill" [style.width.%]="p.total" [style.background]="barColor(p.total)"></div>
-          </div>
-          <span class="parent-value">{{ p.total }}%</span>
-        </div>
-      </button>
-
-      <div class="collapse-body" [class.open]="isExpanded(p.name)">
-        <div *ngIf="loadingChildren.has(p.parentId)" class="hint">Chargement...</div>
-        <div *ngIf="!loadingChildren.has(p.parentId) && (childrenMap.get(p.parentId)?.length || 0) === 0" class="hint">
-          Aucun enfant ce mois-ci.
-        </div>
-
-        <div class="child-row" *ngFor="let ch of (childrenMap.get(p.parentId) || []); trackBy: trackByChild">
-          <span class="parent-name">{{ ch.name }}</span>
+    @for(p of psv; track p.parentId){
+      <div class="parent-row">
+        <button class="parent-line" type="button" (click)="onToggleParent(p)" [attr.aria-expanded]="isExpanded(p.name)">
+          <span class="chevron" [class.open]="isExpanded(p.name)"></span>
+          <span class="parent-name">{{ p.name }}</span>
           <div class="bar-container">
             <div class="bar">
-              <div class="fill" [style.width.%]="ch.percent" [style.background]="barColor(ch.percent)"></div>
+              <div class="fill" [style.width.%]="p.total" [style.background]="barColor(p.total)"></div>
             </div>
-            <span class="parent-value">{{ ch.percent }}%</span>
+            <span class="parent-value">{{ p.total }}%</span>
           </div>
+        </button>
+
+        <div class="collapse-body" [class.open]="isExpanded(p.name)">
+          @if(loadingChildren.has(p.parentId)){
+            <div class="hint">Chargement...</div>
+          }
+
+          @if(!loadingChildren.has(p.parentId) && (childrenMap.get(p.parentId)?.length || 0) === 0){
+            <div class="hint">Aucun enfant ce mois-ci.</div>
+          }
+
+          @for(ch of (childrenMap.get(p.parentId) || []); track ch.childId){
+            <div class="child-row">
+              <span class="parent-name">{{ ch.name }}</span>
+              <div class="bar-container">
+                <div class="bar">
+                  <div class="fill" [style.width.%]="ch.percent" [style.background]="barColor(ch.percent)"></div>
+                </div>
+                <span class="parent-value">{{ ch.percent }}%</span>
+              </div>
+            </div>
+          }
         </div>
       </div>
-    </div>
+    }
 
     <div class="section-title">Epargne: {{epargne}} LBP</div>
+
+    <div class="section-title">Aperçus</div>
+
+    @if(loadingInsights) {
+      <div class="hint" >Chargement...</div>
+    }
+
+    @if(!loadingInsights && insights.length === 0){
+      <div class="hint">
+        Aucun insight pour le moment.
+      </div>
+    }
+
+    <div style="display:flex; gap:10px; align-items:center; margin: 6px 0 14px;">
+      <span class="hint" style="margin:0;">
+        Mois: {{ monthInsight }}
+      </span>
+    </div>
+
+    @for(i of insights; track i.categoryId){
+      <div style="border: 1px solid #e6e6e6; border-radius: 12px; padding: 12px; margin-bottom: 10px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+          <div style="font-weight:600;">{{ i.title }}</div>
+
+          <span style="padding:4px 10px; border-radius: 999px; font-size: 12px; color: #111; background: #eee;"
+                [style.background]="severityColor(i.severity)">
+            {{ severityLabel(i.severity) }} • {{ i.score }}
+          </span>
+        </div>
+
+        <div class="insight-message" style="margin-top: 8px;">
+          {{ i.message }}
+        </div>
+
+        @if(i.suggestions.length) {
+          <ul style="margin: 10px 0 0; padding-left: 18px;">
+            @for(s of i.suggestions; track s){
+              <li>{{ s }}</li>
+            }
+          </ul>
+        }
+      </div>
+    }
   </div>
 </div>

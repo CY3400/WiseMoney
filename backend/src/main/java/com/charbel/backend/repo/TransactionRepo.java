@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.charbel.backend.DTO.ChildPercentView;
+import com.charbel.backend.DTO.DeltaTransactions;
 import com.charbel.backend.DTO.ParentSpendView;
 import com.charbel.backend.DTO.PercentGap;
 import com.charbel.backend.DTO.StatisticsViews;
@@ -88,10 +89,16 @@ public interface TransactionRepo extends JpaRepository<Transaction, Long> {
                 FROM wise_money.budget_management bm
                 WHERE bm.type_allocation = 'LBP' AND bm.user_id = :userId
                 GROUP BY bm.user_id),
+                sum_plus AS (SELECT T.USER_ID, COALESCE(SUM(AMOUNT),0) AS SUM
+                FROM WISE_MONEY.TRANSACTIONS T
+                INNER JOIN WISE_MONEY.CATEGORIES C ON C.ID = T.CATEGORY_ID
+                WHERE T.USER_ID = :userId AND C.TYPE = 'REVENU' AND EXTRACT(MONTH FROM SYSDATE()) = EXTRACT(MONTH FROM T.TRANSACTION_DATE) AND EXTRACT(YEAR FROM SYSDATE()) = EXTRACT(YEAR FROM T.TRANSACTION_DATE)
+                GROUP BY T.USER_ID),
                 alloc_per_child AS (SELECT bm.user_id, bm.category_id AS child_id,
                 SUM(CASE WHEN bm.type_allocation = 'LBP' THEN bm.amount
-                WHEN bm.type_allocation = 'PERCENT' THEN GREATEST(COALESCE(b.amount,0) - COALESCE(sl.lbp_sum,0), 0) * bm.amount / 100 ELSE 0 END) AS child_alloc
+                WHEN bm.type_allocation = 'PERCENT' THEN GREATEST(COALESCE(b.amount,0) + COALESCE(SP.SUM,0) - COALESCE(sl.lbp_sum,0), 0) * bm.amount / 100 ELSE 0 END) AS child_alloc
                 FROM wise_money.budget_management bm
+                LEFT JOIN SUM_PLUS SP ON SP.USER_ID = BM.USER_ID
                 LEFT JOIN wise_money.budgets b ON b.user_id = bm.user_id AND b.month = EXTRACT(MONTH FROM SYSDATE()) AND b.year = EXTRACT(YEAR FROM SYSDATE())
                 LEFT JOIN sum_lbp sl ON sl.user_id = bm.user_id
                 WHERE bm.user_id = :userId
@@ -171,4 +178,32 @@ public interface TransactionRepo extends JpaRepository<Transaction, Long> {
         GROUP BY MONTH, YEAR;
         """, nativeQuery = true)
         List<StatisticsViews> getExpensesRevenuesDifference(@Param("userId") Long userId);
+
+        @Query(value="""
+        SELECT *
+        FROM TRANSACTIONS
+        WHERE USER_ID = :userId
+        AND TRANSACTION_DATE >= :startDate and TRANSACTION_DATE < :endDate
+        """, nativeQuery = true)
+        List<Transaction> findByUserAndDateRange(@Param("userId") Long userId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+        @Query(value="""
+        WITH CURRENT_MONTH AS (SELECT CATEGORY_ID, NAME, SUM(AMOUNT) AS AMOUNT
+        FROM WISE_MONEY.TRANSACTIONS T
+        INNER JOIN WISE_MONEY.CATEGORIES C ON C.ID = T.CATEGORY_ID
+        WHERE T.USER_ID = :userId AND EXTRACT(MONTH FROM TRANSACTION_DATE) = EXTRACT(MONTH FROM NOW()) AND EXTRACT(YEAR FROM TRANSACTION_DATE) = EXTRACT(YEAR FROM NOW())
+        GROUP BY NAME, CATEGORY_ID),
+        PRIOR_MONTH AS (SELECT CATEGORY_ID, NAME, SUM(AMOUNT) AS AMOUNT
+        FROM WISE_MONEY.TRANSACTIONS T
+        INNER JOIN WISE_MONEY.CATEGORIES C ON C.ID = T.CATEGORY_ID
+        WHERE T.USER_ID = :userId AND (EXTRACT(MONTH FROM TRANSACTION_DATE) = EXTRACT(MONTH FROM NOW()) - 1 AND EXTRACT(MONTH FROM NOW()) != 1 AND EXTRACT(YEAR FROM TRANSACTION_DATE) = EXTRACT(YEAR FROM NOW()))
+        OR (EXTRACT(MONTH FROM TRANSACTION_DATE) = 12 AND EXTRACT(MONTH FROM NOW()) = 1 AND EXTRACT(YEAR FROM TRANSACTION_DATE) = EXTRACT(YEAR FROM NOW()) - 1)
+        GROUP BY NAME, CATEGORY_ID)
+        SELECT CM.NAME, CM.AMOUNT - PM.AMOUNT AS DELTA
+        FROM CURRENT_MONTH CM
+        INNER JOIN PRIOR_MONTH PM ON PM.CATEGORY_ID = CM.CATEGORY_ID
+        WHERE CM.AMOUNT - PM.AMOUNT > 0
+        ORDER BY 2 DESC LIMIT 3;
+        """, nativeQuery = true)
+        List<DeltaTransactions> findDeltaTransactions(@Param("userId") Long userId);
 }

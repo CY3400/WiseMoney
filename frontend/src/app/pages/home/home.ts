@@ -2,6 +2,7 @@ import { Component, OnInit, TrackByFunction } from '@angular/core';
 import { Api, PSV, CPV } from '../../services/api';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { InsightDTO } from '../../services/api';
 
 @Component({
   selector: 'app-home',
@@ -23,15 +24,60 @@ export class Home implements OnInit {
   loadingChildren = new Set<number>();
   trackByParent: TrackByFunction<PSV> = (_: number, item: PSV) => (item?.parentId as number) ?? (item?.name as string);
   trackByChild: TrackByFunction<CPV> = (_: number, item: CPV) => (item?.childId as number) ?? (item?.name as string);
+  insights: InsightDTO[] = [];
+  loadingInsights = false;
+
+  insightMonth = '';
+  monthInsight = '';
 
   constructor(private api: Api, private router: Router, private route: ActivatedRoute) {
     this.user = this.route.snapshot.data['me'];
   }
 
   ngOnInit(): void {
+    this.insightMonth = this.getYearMonth(new Date());
+
+    this.monthInsight = new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }).replace(/^./, c => c.toUpperCase());
+
     this.loadPercent();
     this.loadPSV();
     this.loadEpargne();
+
+    this.loadInsights(true);
+  }
+
+    private getYearMonth(d: Date): string {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    return `${y}-${m}`;
+  }
+
+  loadInsights(force: boolean): void {
+    this.loadingInsights = true;
+
+    this.api.getInsights(this.insightMonth, force).subscribe({
+      next: (rows) => {
+        this.insights = rows ?? [];
+        this.loadingInsights = false;
+      },
+      error: (err) => {
+        console.error('Erreur getInsights():', err);
+        this.insights = [];
+        this.loadingInsights = false;
+      }
+    });
+  }
+
+  severityLabel(s: string): string {
+    if (s === 'CRITICAL') return 'Critique';
+    if (s === 'WARNING') return 'Attention';
+    return 'Info';
+  }
+
+  severityColor(s: string): string {
+    if (s === 'CRITICAL') return '#e74c3c';
+    if (s === 'WARNING') return '#f1c40f';
+    return '#2ecc71';
   }
 
   loadPercent(): void {

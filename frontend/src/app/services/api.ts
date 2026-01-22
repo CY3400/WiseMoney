@@ -116,6 +116,32 @@ import { Observable, map } from 'rxjs';
     gap: number;
   }
 
+  export type InsightSeverity = 'INFO' | 'WARNING' | 'CRITICAL';
+
+  export type InsightType = 'RUN_RATE_OVER_BUDGET'| 'MIDMONTH_BUDGET_CHECK'| 'SPIKE_SPENDING'| 'DAILY_SPENDING_CAP'| 'LAST_SPRINT';
+
+  export interface InsightDTO {
+    type: InsightType;
+    severity: InsightSeverity;
+    score: number;
+    title: string;
+    message: string;
+    month: string;
+    categoryId?: number | null;
+    categoryName?: string | null;
+    facts: Record<string, any>;
+    suggestions: string[];
+  }
+
+  export interface InsightSettingsDTO {
+    midmonthDay10ThresholdPercent: number;
+    midmonthDay15ThresholdPercent: number;
+    runrateWarningPercent: number;
+    runrateCriticalPercent: number;
+  }
+
+  export interface UpdateInsightSettingsRequest extends InsightSettingsDTO {}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -340,4 +366,28 @@ export class Api {
       withCredentials: true
     })
   }
+
+    getInsights(month: string, force: boolean = false): Observable<InsightDTO[]> {
+    const params = new HttpParams()
+      .set('month', month)
+      .set('force', String(force));
+
+    return this.http.get<InsightDTO[]>(`${this.baseUrl}/insights`, {
+      params,
+      withCredentials: true
+    });
+  }
+
+  getInsightSettings(): Observable<InsightSettingsDTO> {
+    return this.http.get<InsightSettingsDTO>(`${this.baseUrl}/insights/settings`, {
+      withCredentials: true
+    });
+  }
+
+  updateInsightSettings(payload: UpdateInsightSettingsRequest): Observable<InsightSettingsDTO> {
+    return this.http.put<InsightSettingsDTO>(`${this.baseUrl}/insights/settings`, payload, {
+      withCredentials: true
+    });
+  }
+
 }

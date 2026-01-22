@@ -44,6 +44,18 @@ public class Users {
     @Column(nullable = false, length = 20)
     private Role role = Role.USER;
 
+    @Column(name = "midmonth_day10_threshold_percent", nullable = false)
+    private int midmonthDay10ThresholdPercent = 40;
+
+    @Column(name = "midmonth_day15_threshold_percent", nullable = false)
+    private int midmonthDay15ThresholdPercent = 55;
+
+    @Column(name = "runrate_warning_percent", nullable = false)
+    private int runrateWarningPercent = 10;
+
+    @Column(name = "runrate_critical_percent", nullable = false)
+    private int runrateCriticalPercent = 25;
+
     public Users(){
 
     };
@@ -104,4 +116,16 @@ public class Users {
     public void setRole(Role role){
         this.role = role;
     }
+
+    public int getMidmonthDay10ThresholdPercent() { return midmonthDay10ThresholdPercent; }
+    public void setMidmonthDay10ThresholdPercent(int v) { this.midmonthDay10ThresholdPercent = v; }
+
+    public int getMidmonthDay15ThresholdPercent() { return midmonthDay15ThresholdPercent; }
+    public void setMidmonthDay15ThresholdPercent(int v) { this.midmonthDay15ThresholdPercent = v; }
+
+    public int getRunrateWarningPercent() { return runrateWarningPercent; }
+    public void setRunrateWarningPercent(int v) { this.runrateWarningPercent = v; }
+
+    public int getRunrateCriticalPercent() { return runrateCriticalPercent; }
+    public void setRunrateCriticalPercent(int v) { this.runrateCriticalPercent = v; }
 }

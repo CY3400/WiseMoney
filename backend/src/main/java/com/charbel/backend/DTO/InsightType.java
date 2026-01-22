@@ -1,0 +1,11 @@
+package com.charbel.backend.DTO;
+
+public enum InsightType {
+    CATEGORY_OVER_BUDGET,
+    RUN_RATE_OVER_BUDGET,
+    SPIKE_SPENDING,
+    MIDMONTH_BUDGET_CHECK,
+    DAILY_SPENDING_CAP,
+    LAST_SPRINT,
+    MONTH_OVER_MONTH_GLOBAL
+}
