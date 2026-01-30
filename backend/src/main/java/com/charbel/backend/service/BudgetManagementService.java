@@ -82,6 +82,6 @@ public class BudgetManagementService {
     public List<BudgetManagement> getBudgetManagementForUser(Users user) {
         Objects.requireNonNull(user, "Utilisateur requis");
 
-        return repo.findByUser(user);
+        return repo.findByUserAndStatus(user.getId(), 1);
     }
 }

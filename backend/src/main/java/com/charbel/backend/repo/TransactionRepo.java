@@ -57,95 +57,150 @@ public interface TransactionRepo extends JpaRepository<Transaction, Long> {
     Integer findCurrentMonthPercentByUserId(@Param("userId") Long userId);
 
     @Query(value="""
-                WITH sum_lbp AS (SELECT bm.user_id, COALESCE(SUM(bm.amount),0) AS lbp_sum
-                FROM wise_money.budget_management bm
-                WHERE bm.type_allocation = 'LBP' AND bm.user_id = :userId
-                GROUP BY bm.user_id),
-                alloc_per_parent AS (SELECT bm.user_id, c_child.parent_id AS parent_id,
-                SUM(CASE WHEN bm.type_allocation = 'LBP' THEN bm.amount
-                WHEN bm.type_allocation = 'PERCENT' THEN GREATEST(COALESCE(b.amount,0) - COALESCE(sl.lbp_sum,0), 0) * bm.amount / 100 ELSE 0 END) AS parent_alloc
-                FROM wise_money.budget_management bm
-                JOIN wise_money.categories c_child ON c_child.id = bm.category_id
-                LEFT JOIN wise_money.budgets b ON b.user_id = bm.user_id AND b.month = EXTRACT(MONTH FROM SYSDATE()) AND b.year = EXTRACT(YEAR FROM SYSDATE())
-                LEFT JOIN sum_lbp sl ON sl.user_id = bm.user_id
-                WHERE bm.user_id = :userId
-                GROUP BY bm.user_id, c_child.parent_id),
-                spend_by_parent AS (SELECT t.user_id, p.id AS parent_id, p.name AS parent_name, COALESCE(SUM(t.amount),0) AS spent
-                FROM wise_money.transactions t
-                JOIN wise_money.categories c_child ON c_child.id = t.category_id
-                JOIN wise_money.categories p ON p.id = c_child.parent_id
-                WHERE t.user_id = :userId AND c_child.type != 'REVENU' AND EXTRACT(MONTH FROM t.transaction_date) = EXTRACT(MONTH FROM SYSDATE())
-                AND EXTRACT(YEAR FROM t.transaction_date) = EXTRACT(YEAR FROM SYSDATE())
-                GROUP BY t.user_id, p.id, p.name)
-                SELECT s.parent_id AS parentId, s.parent_name AS name, COALESCE(CASE WHEN ROUND(100 * s.spent / NULLIF(a.parent_alloc, 0), 0) > 100 THEN 100 ELSE ROUND(100 * s.spent / NULLIF(a.parent_alloc, 0), 0) END, 100) total
-                FROM spend_by_parent s
-                JOIN alloc_per_parent a ON a.user_id = s.user_id AND a.parent_id = s.parent_id
-                ORDER BY total DESC;
+                WITH BUDGET AS (SELECT USER_ID, AMOUNT FROM WISE_MONEY.BUDGETS
+                WHERE USER_ID = :userId AND MONTH = EXTRACT(MONTH FROM SYSDATE()) AND YEAR = EXTRACT(YEAR FROM SYSDATE())),
+                REVENU AS (SELECT T.USER_ID, SUM(AMOUNT) AS TR
+                FROM WISE_MONEY.TRANSACTIONS T
+                INNER JOIN WISE_MONEY.CATEGORIES C ON C.ID = T.CATEGORY_ID
+                WHERE T.USER_ID = :userId
+                AND EXTRACT(MONTH FROM TRANSACTION_DATE) = EXTRACT(MONTH FROM SYSDATE()) AND EXTRACT(YEAR FROM TRANSACTION_DATE) = EXTRACT(YEAR FROM SYSDATE())
+                AND C.TYPE = 'REVENU'
+                GROUP BY USER_ID),
+                DEPENSES_LBP AS (SELECT BM.USER_ID, SUM(T.AMOUNT) AS TD FROM WISE_MONEY.TRANSACTIONS T
+                INNER JOIN WISE_MONEY.BUDGET_MANAGEMENT BM ON BM.CATEGORY_ID = T.CATEGORY_ID
+                WHERE BM.AMOUNT = 0
+                AND BM.USER_ID = :userId AND EXTRACT(MONTH FROM TRANSACTION_DATE) = EXTRACT(MONTH FROM SYSDATE()) AND EXTRACT(YEAR FROM TRANSACTION_DATE) = EXTRACT(YEAR FROM SYSDATE())
+                GROUP BY BM.USER_ID),
+                TOTAL_EXCES AS (SELECT USER_ID, SUM(T_AMOUNT - AMOUNT) AS TOTAL
+                FROM
+                (SELECT BM.USER_ID, BM.CATEGORY_ID, BM.AMOUNT, SUM(T.AMOUNT) AS T_AMOUNT
+                FROM WISE_MONEY.BUDGET_MANAGEMENT BM
+                INNER JOIN TRANSACTIONS T ON BM.CATEGORY_ID = T.CATEGORY_ID
+                WHERE BM.AMOUNT > 0 AND BM.TYPE_ALLOCATION = 'LBP' AND BM.USER_ID = :userId AND EXTRACT(MONTH FROM TRANSACTION_DATE) = EXTRACT(MONTH FROM SYSDATE()) AND EXTRACT(YEAR FROM TRANSACTION_DATE) = EXTRACT(YEAR FROM SYSDATE())
+                GROUP BY BM.USER_ID, BM.CATEGORY_ID, BM.AMOUNT) SUB
+                GROUP BY USER_ID),
+                TOTAL_BUDGET AS (SELECT B.USER_ID, COALESCE(AMOUNT, 0) + COALESCE(TR, 0) - COALESCE(TD, 0) - COALESCE(TE.TOTAL, 0) AS TOTAL
+                FROM BUDGET B
+                LEFT JOIN REVENU R ON R.USER_ID = B.USER_ID
+                LEFT JOIN DEPENSES_LBP DL ON DL.USER_ID = B.USER_ID
+                LEFT JOIN TOTAL_EXCES TE ON TE.USER_ID = B.USER_ID)
+                SELECT ID AS parentId, name, ROUND(SUM(TOTAL_TRANSACTIONS)/SUM(TOTAL_BM)*100,0) AS total
+                FROM (SELECT C2.ID, C2.NAME, C.ID AS CHILD_ID, C.NAME AS CHILD_NAME, SUM(T.AMOUNT) AS TOTAL_TRANSACTIONS,
+                CASE WHEN TYPE_ALLOCATION = 'LBP' THEN GREATEST(BM.AMOUNT, SUM(T.AMOUNT)) ELSE ROUND(TB.TOTAL * BM.AMOUNT / 100, 0) END TOTAL_BM
+                FROM WISE_MONEY.TRANSACTIONS T
+                INNER JOIN WISE_MONEY.BUDGET_MANAGEMENT BM ON BM.CATEGORY_ID = T.CATEGORY_ID
+                INNER JOIN WISE_MONEY.CATEGORIES C ON C.ID = T.CATEGORY_ID
+                INNER JOIN WISE_MONEY.CATEGORIES C2 ON C2.ID = C.PARENT_ID
+                INNER JOIN TOTAL_BUDGET TB ON TB.USER_ID = T.USER_ID
+                WHERE BM.USER_ID = :userId AND EXTRACT(MONTH FROM TRANSACTION_DATE) = EXTRACT(MONTH FROM SYSDATE()) AND EXTRACT(YEAR FROM TRANSACTION_DATE) = EXTRACT(YEAR FROM SYSDATE())
+                GROUP BY C2.ID, C2.NAME, TYPE_ALLOCATION, TB.TOTAL, BM.AMOUNT, C.ID, C.NAME
+                UNION
+                SELECT C2.ID, C2.NAME, C.ID, C.NAME, 0, CASE WHEN TYPE_ALLOCATION = 'LBP' THEN BM.AMOUNT ELSE ROUND(TB.TOTAL * BM.AMOUNT / 100, 0) END
+                FROM WISE_MONEY.TRANSACTIONS T
+                INNER JOIN WISE_MONEY.BUDGET_MANAGEMENT BM ON BM.CATEGORY_ID = T.CATEGORY_ID
+                INNER JOIN WISE_MONEY.CATEGORIES C ON C.ID = T.CATEGORY_ID
+                INNER JOIN WISE_MONEY.CATEGORIES C2 ON C2.ID = C.PARENT_ID
+                INNER JOIN TOTAL_BUDGET TB ON TB.USER_ID = T.USER_ID
+                WHERE BM.USER_ID = :userId AND BM.AMOUNT > 0 AND BM.CATEGORY_ID NOT IN (SELECT CATEGORY_ID FROM wise_money.transactions WHERE USER_ID = :userId AND EXTRACT(MONTH FROM TRANSACTION_DATE) = EXTRACT(MONTH FROM SYSDATE()) AND EXTRACT(YEAR FROM TRANSACTION_DATE) = EXTRACT(YEAR FROM SYSDATE()))) SUB
+                GROUP BY ID, NAME;
                 """, nativeQuery = true)
     List<ParentSpendView> findParentSpendViewByUserId(@Param("userId") Long userId);
 
     @Query(value="""
-                WITH sum_lbp AS (SELECT bm.user_id, COALESCE(SUM(bm.amount),0) AS lbp_sum
-                FROM wise_money.budget_management bm
-                WHERE bm.type_allocation = 'LBP' AND bm.user_id = :userId
-                GROUP BY bm.user_id),
-                sum_plus AS (SELECT T.USER_ID, COALESCE(SUM(AMOUNT),0) AS SUM
+                WITH BUDGET AS (SELECT USER_ID, AMOUNT FROM WISE_MONEY.BUDGETS
+                WHERE USER_ID = :userId AND MONTH = EXTRACT(MONTH FROM SYSDATE()) AND YEAR = EXTRACT(YEAR FROM SYSDATE())),
+                REVENU AS (SELECT T.USER_ID, SUM(AMOUNT) AS TR
                 FROM WISE_MONEY.TRANSACTIONS T
                 INNER JOIN WISE_MONEY.CATEGORIES C ON C.ID = T.CATEGORY_ID
-                WHERE T.USER_ID = :userId AND C.TYPE = 'REVENU' AND EXTRACT(MONTH FROM SYSDATE()) = EXTRACT(MONTH FROM T.TRANSACTION_DATE) AND EXTRACT(YEAR FROM SYSDATE()) = EXTRACT(YEAR FROM T.TRANSACTION_DATE)
-                GROUP BY T.USER_ID),
-                alloc_per_child AS (SELECT bm.user_id, bm.category_id AS child_id,
-                SUM(CASE WHEN bm.type_allocation = 'LBP' THEN bm.amount
-                WHEN bm.type_allocation = 'PERCENT' THEN GREATEST(COALESCE(b.amount,0) + COALESCE(SP.SUM,0) - COALESCE(sl.lbp_sum,0), 0) * bm.amount / 100 ELSE 0 END) AS child_alloc
-                FROM wise_money.budget_management bm
-                LEFT JOIN SUM_PLUS SP ON SP.USER_ID = BM.USER_ID
-                LEFT JOIN wise_money.budgets b ON b.user_id = bm.user_id AND b.month = EXTRACT(MONTH FROM SYSDATE()) AND b.year = EXTRACT(YEAR FROM SYSDATE())
-                LEFT JOIN sum_lbp sl ON sl.user_id = bm.user_id
-                WHERE bm.user_id = :userId
-                GROUP BY bm.user_id, bm.category_id),
-                spend_child AS (SELECT t.user_id, c.id AS child_id, c.parent_id AS parent_id, c.name AS name, COALESCE(SUM(t.amount),0) AS amount
-                FROM wise_money.transactions t
-                JOIN wise_money.categories c ON c.id = t.category_id
-                WHERE t.user_id = :userId AND c.type = 'DEPENSE' AND EXTRACT(MONTH FROM t.transaction_date) = EXTRACT(MONTH FROM SYSDATE())
-                AND EXTRACT(YEAR FROM t.transaction_date) = EXTRACT(YEAR FROM SYSDATE()) AND c.parent_id = :parentId
-                GROUP BY t.user_id, child_id, parent_id, name)
-                SELECT sc.child_id AS childId, sc.name AS name, sc.amount AS amount, case when apc.child_alloc = 0 then sc.amount else apc.child_alloc end total,
-                ROUND(100 * sc.amount / case when apc.child_alloc = 0 then sc.amount else apc.child_alloc end, 0) AS percent
-                FROM spend_child sc
-                JOIN alloc_per_child apc ON apc.user_id = sc.user_id AND apc.child_id = sc.child_id
-                ORDER BY percent DESC;
+                WHERE T.USER_ID = :userId
+                AND EXTRACT(MONTH FROM TRANSACTION_DATE) = EXTRACT(MONTH FROM SYSDATE()) AND EXTRACT(YEAR FROM TRANSACTION_DATE) = EXTRACT(YEAR FROM SYSDATE())
+                AND C.TYPE = 'REVENU'
+                GROUP BY USER_ID),
+                DEPENSES_LBP AS (SELECT BM.USER_ID, SUM(T.AMOUNT) AS TD FROM WISE_MONEY.TRANSACTIONS T
+                INNER JOIN WISE_MONEY.BUDGET_MANAGEMENT BM ON BM.CATEGORY_ID = T.CATEGORY_ID
+                WHERE BM.AMOUNT = 0
+                AND BM.USER_ID = :userId AND EXTRACT(MONTH FROM TRANSACTION_DATE) = EXTRACT(MONTH FROM SYSDATE()) AND EXTRACT(YEAR FROM TRANSACTION_DATE) = EXTRACT(YEAR FROM SYSDATE())
+                GROUP BY BM.USER_ID),
+                TOTAL_EXCES AS (SELECT USER_ID, SUM(T_AMOUNT - AMOUNT) AS TOTAL
+                FROM
+                (SELECT BM.USER_ID, BM.CATEGORY_ID, BM.AMOUNT, SUM(T.AMOUNT) AS T_AMOUNT
+                FROM WISE_MONEY.BUDGET_MANAGEMENT BM
+                INNER JOIN TRANSACTIONS T ON BM.CATEGORY_ID = T.CATEGORY_ID
+                WHERE BM.AMOUNT > 0 AND BM.TYPE_ALLOCATION = 'LBP' AND BM.USER_ID = :userId AND EXTRACT(MONTH FROM TRANSACTION_DATE) = EXTRACT(MONTH FROM SYSDATE()) AND EXTRACT(YEAR FROM TRANSACTION_DATE) = EXTRACT(YEAR FROM SYSDATE())
+                GROUP BY BM.USER_ID, BM.CATEGORY_ID, BM.AMOUNT) SUB
+                GROUP BY USER_ID),
+                TOTAL_BUDGET AS (SELECT B.USER_ID, COALESCE(AMOUNT, 0) + COALESCE(TR, 0) - COALESCE(TD, 0) - COALESCE(TE.TOTAL, 0) AS TOTAL
+                FROM BUDGET B
+                LEFT JOIN REVENU R ON R.USER_ID = B.USER_ID
+                LEFT JOIN DEPENSES_LBP DL ON DL.USER_ID = B.USER_ID
+                LEFT JOIN TOTAL_EXCES TE ON TE.USER_ID = B.USER_ID)
+                SELECT CATEGORY_ID AS childId, name, ROUND(TOTAL_TRANSACTIONS/TOTAL_BM * 100, 0) AS percent
+                FROM (SELECT T.CATEGORY_ID, C.NAME, SUM(T.AMOUNT) AS TOTAL_TRANSACTIONS,
+                CASE WHEN TYPE_ALLOCATION = 'LBP' THEN GREATEST(BM.AMOUNT, SUM(T.AMOUNT)) ELSE ROUND(TB.TOTAL * BM.AMOUNT / 100, 0) END TOTAL_BM
+                FROM WISE_MONEY.TRANSACTIONS T
+                INNER JOIN WISE_MONEY.BUDGET_MANAGEMENT BM ON BM.CATEGORY_ID = T.CATEGORY_ID
+                INNER JOIN WISE_MONEY.CATEGORIES C ON C.ID = T.CATEGORY_ID
+                INNER JOIN TOTAL_BUDGET TB ON TB.USER_ID = T.USER_ID
+                WHERE C.PARENT_ID = :parentId AND BM.USER_ID = :userId AND EXTRACT(MONTH FROM TRANSACTION_DATE) = EXTRACT(MONTH FROM SYSDATE()) AND EXTRACT(YEAR FROM TRANSACTION_DATE) = EXTRACT(YEAR FROM SYSDATE())
+                GROUP BY T.CATEGORY_ID, BM.AMOUNT, TYPE_ALLOCATION, TB.TOTAL) SUB;
                 """, nativeQuery = true)
     List<ChildPercentView> findChildrenSpendViewByUserId(@Param("userId") Long userId, @Param("parentId") Long parentId);
 
         @Query(value="""
-        WITH sum_lbp AS (SELECT bm.user_id, COALESCE(SUM(bm.amount),0) AS lbp_sum
-        FROM wise_money.budget_management bm
-        WHERE bm.type_allocation = 'LBP'
-        AND bm.user_id = :userId
-        GROUP BY bm.user_id),
-        alloc_total AS (SELECT bm.user_id,SUM(CASE WHEN bm.type_allocation = 'LBP' THEN bm.amount WHEN bm.type_allocation = 'PERCENT' THEN GREATEST(COALESCE(b.amount,0) - COALESCE(sl.lbp_sum,0), 0) * bm.amount / 100 ELSE 0 END) AS alloc_sum
-        FROM wise_money.budget_management bm
-        LEFT JOIN wise_money.budgets b ON b.user_id = bm.user_id AND b.month = EXTRACT(MONTH FROM SYSDATE()) AND b.year = EXTRACT(YEAR FROM SYSDATE())
-        LEFT JOIN sum_lbp sl ON sl.user_id = bm.user_id
-        WHERE bm.user_id = :userId
-        GROUP BY bm.user_id),
-        sum_dep AS (SELECT C.USER_ID, SUM(T.AMOUNT) AS DEPENSE
+        WITH BUDGET AS (SELECT USER_ID, AMOUNT FROM WISE_MONEY.BUDGETS
+        WHERE USER_ID = :userId AND MONTH = EXTRACT(MONTH FROM SYSDATE()) AND YEAR = EXTRACT(YEAR FROM SYSDATE())),
+        REVENU AS (SELECT T.USER_ID, SUM(AMOUNT) AS TR
         FROM WISE_MONEY.TRANSACTIONS T
         INNER JOIN WISE_MONEY.CATEGORIES C ON C.ID = T.CATEGORY_ID
-        INNER JOIN WISE_MONEY.BUDGET_MANAGEMENT B ON B.CATEGORY_ID = C.ID
-        WHERE TYPE = 'DEPENSE' AND B.AMOUNT = 0 AND EXTRACT(MONTH FROM TRANSACTION_DATE) = EXTRACT(MONTH FROM SYSDATE()) AND EXTRACT(YEAR FROM TRANSACTION_DATE) = EXTRACT(YEAR FROM SYSDATE())
+        WHERE T.USER_ID = :userId
+        AND EXTRACT(MONTH FROM TRANSACTION_DATE) = EXTRACT(MONTH FROM SYSDATE()) AND EXTRACT(YEAR FROM TRANSACTION_DATE) = EXTRACT(YEAR FROM SYSDATE())
+        AND C.TYPE = 'REVENU'
         GROUP BY USER_ID),
-        sum_revenu AS (SELECT C.USER_ID, SUM(T.AMOUNT) AS REVENU
+        DEPENSES_LBP AS (SELECT BM.USER_ID, SUM(T.AMOUNT) AS TD FROM WISE_MONEY.TRANSACTIONS T
+        INNER JOIN WISE_MONEY.BUDGET_MANAGEMENT BM ON BM.CATEGORY_ID = T.CATEGORY_ID
+        WHERE BM.AMOUNT = 0
+        AND BM.USER_ID = :userId AND EXTRACT(MONTH FROM TRANSACTION_DATE) = EXTRACT(MONTH FROM SYSDATE()) AND EXTRACT(YEAR FROM TRANSACTION_DATE) = EXTRACT(YEAR FROM SYSDATE())
+        GROUP BY BM.USER_ID),
+        TOTAL_EXCES AS (SELECT USER_ID, SUM(T_AMOUNT - AMOUNT) AS TOTAL
+        FROM
+        (SELECT BM.USER_ID, BM.CATEGORY_ID, BM.AMOUNT, SUM(T.AMOUNT) AS T_AMOUNT
+        FROM WISE_MONEY.BUDGET_MANAGEMENT BM
+        INNER JOIN TRANSACTIONS T ON BM.CATEGORY_ID = T.CATEGORY_ID
+        WHERE BM.AMOUNT > 0 AND BM.TYPE_ALLOCATION = 'LBP' AND BM.USER_ID = :userId AND EXTRACT(MONTH FROM TRANSACTION_DATE) = EXTRACT(MONTH FROM SYSDATE()) AND EXTRACT(YEAR FROM TRANSACTION_DATE) = EXTRACT(YEAR FROM SYSDATE())
+        GROUP BY BM.USER_ID, BM.CATEGORY_ID, BM.AMOUNT) SUB
+        GROUP BY USER_ID),
+        TOTAL_BUDGET AS (SELECT B.USER_ID, COALESCE(AMOUNT, 0) + COALESCE(TR, 0) - COALESCE(TD, 0) - COALESCE(TE.TOTAL, 0) AS TOTAL
+        FROM BUDGET B
+        LEFT JOIN REVENU R ON R.USER_ID = B.USER_ID
+        LEFT JOIN DEPENSES_LBP DL ON DL.USER_ID = B.USER_ID
+        LEFT JOIN TOTAL_EXCES TE ON TE.USER_ID = B.USER_ID),
+        TOTAL_LBP AS (SELECT USER_ID, SUM(TOTAL) AS TOTAL
+        FROM(SELECT T.USER_ID, T.CATEGORY_ID, GREATEST(SUM(T.AMOUNT), BM.AMOUNT) AS TOTAL
         FROM WISE_MONEY.TRANSACTIONS T
-        INNER JOIN WISE_MONEY.CATEGORIES C ON C.ID = T.CATEGORY_ID
-        WHERE TYPE = 'REVENU' AND EXTRACT(MONTH FROM TRANSACTION_DATE) = EXTRACT(MONTH FROM SYSDATE()) AND EXTRACT(YEAR FROM TRANSACTION_DATE) = EXTRACT(YEAR FROM SYSDATE())
+        INNER JOIN WISE_MONEY.BUDGET_MANAGEMENT BM ON BM.CATEGORY_ID = T.CATEGORY_ID
+        WHERE T.USER_ID = :userId AND BM.TYPE_ALLOCATION = 'LBP'
+        AND EXTRACT(MONTH FROM TRANSACTION_DATE) = EXTRACT(MONTH FROM SYSDATE()) AND EXTRACT(YEAR FROM TRANSACTION_DATE) = EXTRACT(YEAR FROM SYSDATE())
+        GROUP BY T.USER_ID, T.CATEGORY_ID, BM.AMOUNT
+        UNION
+        SELECT T.USER_ID, T.CATEGORY_ID, BM.AMOUNT
+        FROM WISE_MONEY.TRANSACTIONS T
+        INNER JOIN WISE_MONEY.BUDGET_MANAGEMENT BM ON BM.CATEGORY_ID = T.CATEGORY_ID
+        WHERE BM.USER_ID = :userId AND BM.AMOUNT > 0 AND BM.TYPE_ALLOCATION = 'LBP' AND BM.CATEGORY_ID NOT IN (SELECT CATEGORY_ID FROM wise_money.transactions WHERE USER_ID = :userId AND EXTRACT(MONTH FROM TRANSACTION_DATE) = EXTRACT(MONTH FROM SYSDATE()) AND EXTRACT(YEAR FROM TRANSACTION_DATE) = EXTRACT(YEAR FROM SYSDATE()))) SUB
+        GROUP BY USER_ID),
+        TOTAL_PERCENT AS (SELECT USER_ID, SUM(TOTAL) AS TOTAL
+        FROM (SELECT T.USER_ID, T.CATEGORY_ID, GREATEST(SUM(T.AMOUNT), ROUND(TB.TOTAL * BM.AMOUNT / 100, 0)) AS TOTAL
+        FROM WISE_MONEY.TRANSACTIONS T
+        INNER JOIN WISE_MONEY.BUDGET_MANAGEMENT BM ON BM.CATEGORY_ID = T.CATEGORY_ID
+        INNER JOIN TOTAL_BUDGET TB ON TB.USER_ID = BM.USER_ID
+        WHERE T.USER_ID = :userId AND BM.TYPE_ALLOCATION = 'PERCENT'
+        AND EXTRACT(MONTH FROM TRANSACTION_DATE) = EXTRACT(MONTH FROM SYSDATE()) AND EXTRACT(YEAR FROM TRANSACTION_DATE) = EXTRACT(YEAR FROM SYSDATE())
+        GROUP BY T.USER_ID, T.CATEGORY_ID, BM.AMOUNT, TB.TOTAL) SUB
         GROUP BY USER_ID)
-        SELECT COALESCE(b.amount,0) - COALESCE(a.alloc_sum,0) - COALESCE(sd.depense,0) + COALESCE(sr.revenu,0) AS epargne
-        FROM wise_money.budgets b
-        LEFT JOIN alloc_total a ON a.user_id = b.user_id
-        LEFT JOIN sum_revenu sr ON sr.user_id = b.user_id
-        LEFT JOIN sum_dep sd ON sd.user_id = b.user_id
-        WHERE b.user_id = :userId AND b.month = EXTRACT(MONTH FROM SYSDATE()) AND b.year = EXTRACT(YEAR FROM SYSDATE());
+        SELECT COALESCE(AMOUNT, 0) + COALESCE(TR, 0) - COALESCE(TL.TOTAL, 0) - COALESCE(TP.TOTAL, 0) AS EPARGNE
+        FROM BUDGET B
+        LEFT JOIN REVENU R ON R.USER_ID = B.USER_ID
+        LEFT JOIN TOTAL_LBP TL ON TL.USER_ID = B.USER_ID
+        LEFT JOIN TOTAL_PERCENT TP ON TP.USER_ID = B.USER_ID;
         """, nativeQuery = true)
         Integer getEpargneOfMonth(@Param("userId") Long userId);
 

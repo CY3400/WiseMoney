@@ -23,8 +23,10 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
     private final AppProps props;
     private final JwtFilter jwtFilter;
+
     private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
 
     public SecurityConfig(AppProps props, JwtFilter jwtFilter) {
@@ -40,7 +42,14 @@ public class SecurityConfig {
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                .requestMatchers("/login", "/register", "/verify", "/logout", "/forgot-password", "/reset-password").permitAll()
+                .requestMatchers(
+                    "/login",
+                    "/register",
+                    "/verify",
+                    "/logout",
+                    "/forgot-password",
+                    "/reset-password"
+                ).permitAll()
                 .anyRequest().authenticated()
             )
             .exceptionHandling(ex -> ex
@@ -51,7 +60,7 @@ public class SecurityConfig {
                     res.getWriter().write("{\"message\":\"Non authentifié\"}");
                 })
                 .accessDeniedHandler((req, res, accessEx) -> {
-                    log.debug("403 Accès refusé: path{}, msg={}", req.getRequestURI(), accessEx.getMessage());
+                    log.debug("403 Accès refusé: path={}, msg={}", req.getRequestURI(), accessEx.getMessage());
                     res.setStatus(403);
                     res.setContentType("application/json");
                     res.getWriter().write("{\"message\":\"Accès refusé\"}");
@@ -68,24 +77,30 @@ public class SecurityConfig {
     }
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource(){
-        var config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of(props.getFrontend().getBaseUrl(), "http://127.0.0.1:*","http://localhost:*"));
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+
+        // IMPORTANT: allowCredentials=true => PAS de "*"
+        config.setAllowedOriginPatterns(List.of(
+            props.getFrontend().getBaseUrl(),
+            "http://localhost:4200",
+            "http://127.0.0.1:4200"
+        ));
+
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin"));
-        config.setAllowCredentials(true);
-
         config.setExposedHeaders(List.of("Set-Cookie"));
-
+        config.setAllowCredentials(true);
         config.setMaxAge(3600L);
 
-        var source = new UrlBasedCorsConfigurationSource();
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
+
         return source;
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder(){
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(12);
     }
 }
