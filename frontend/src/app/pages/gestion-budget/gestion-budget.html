@@ -5,16 +5,18 @@
 
         <table class="table categories">
             <colgroup>
-                <col style="width: 25%;">
-                <col style="width: 25%;">
-                <col style="width: 25%;">
-                <col style="width: 25%;">
+                <col style="width: 20%;">
+                <col style="width: 20%;">
+                <col style="width: 20%;">
+                <col style="width: 20%;">
+                <col style="width: 20%;">
             </colgroup>
             <thead>
                 <tr>
                     <th class="tableName">Nom</th>
                     <th class="tableType">Type</th>
                     <th class="tableAmount">Montant</th>
+                    <th class="tableFrequency">Fréquence</th>
                     <th class="tableModify">Modifier</th>
                 </tr>
             </thead>
@@ -41,6 +43,12 @@
                                 <ng-container *ngIf="r.editAmount !== '' && (Number(r.editAmount) < 0)">Le montant doit être ≥ 0.</ng-container>
                                 <ng-container *ngIf="r.editType === '%' && Number(r.editAmount) > 100">Le % ne peut pas dépasser 100.</ng-container>
                             </div>
+                        </td>
+                        <td>
+                            <select [(ngModel)]="r.editFrequency">
+                                <option value="1">Unique</option>
+                                <option value="2">Multiple</option>
+                            </select>
                         </td>
                         <td>
                             <button class="secondary" type="button" (click)="saveRow(r)" [disabled]="r.saving || !isRowDirty(r) || !isRowValid(r)">

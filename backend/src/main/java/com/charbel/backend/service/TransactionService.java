@@ -154,4 +154,13 @@ public class TransactionService {
 
         return repo.getExpensesRevenuesDifference(user.getId());
     }
+
+    @Transactional(readOnly = true)
+    public Integer getAverageDaily(Users user) {
+        if(user == null) {
+            throw new IllegalArgumentException("Utilisateur requis");
+        }
+
+        return repo.getAverageDaily(user.getId());
+    }
 }

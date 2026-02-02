@@ -84,7 +84,8 @@ public interface TransactionRepo extends JpaRepository<Transaction, Long> {
                 LEFT JOIN REVENU R ON R.USER_ID = B.USER_ID
                 LEFT JOIN DEPENSES_LBP DL ON DL.USER_ID = B.USER_ID
                 LEFT JOIN TOTAL_EXCES TE ON TE.USER_ID = B.USER_ID)
-                SELECT ID AS parentId, name, ROUND(SUM(TOTAL_TRANSACTIONS)/SUM(TOTAL_BM)*100,0) AS total
+                SELECT *
+                FROM (SELECT ID AS parentId, name, ROUND(SUM(TOTAL_TRANSACTIONS)/SUM(TOTAL_BM)*100,0) AS total
                 FROM (SELECT C2.ID, C2.NAME, C.ID AS CHILD_ID, C.NAME AS CHILD_NAME, SUM(T.AMOUNT) AS TOTAL_TRANSACTIONS,
                 CASE WHEN TYPE_ALLOCATION = 'LBP' THEN GREATEST(BM.AMOUNT, SUM(T.AMOUNT)) ELSE ROUND(TB.TOTAL * BM.AMOUNT / 100, 0) END TOTAL_BM
                 FROM WISE_MONEY.TRANSACTIONS T
@@ -102,7 +103,8 @@ public interface TransactionRepo extends JpaRepository<Transaction, Long> {
                 INNER JOIN WISE_MONEY.CATEGORIES C2 ON C2.ID = C.PARENT_ID
                 INNER JOIN TOTAL_BUDGET TB ON TB.USER_ID = T.USER_ID
                 WHERE BM.USER_ID = :userId AND BM.AMOUNT > 0 AND BM.CATEGORY_ID NOT IN (SELECT CATEGORY_ID FROM wise_money.transactions WHERE USER_ID = :userId AND EXTRACT(MONTH FROM TRANSACTION_DATE) = EXTRACT(MONTH FROM SYSDATE()) AND EXTRACT(YEAR FROM TRANSACTION_DATE) = EXTRACT(YEAR FROM SYSDATE()))) SUB
-                GROUP BY ID, NAME;
+                GROUP BY ID, NAME) SUB2
+                WHERE TOTAL > 0;
                 """, nativeQuery = true)
     List<ParentSpendView> findParentSpendViewByUserId(@Param("userId") Long userId);
 
@@ -134,7 +136,7 @@ public interface TransactionRepo extends JpaRepository<Transaction, Long> {
                 LEFT JOIN REVENU R ON R.USER_ID = B.USER_ID
                 LEFT JOIN DEPENSES_LBP DL ON DL.USER_ID = B.USER_ID
                 LEFT JOIN TOTAL_EXCES TE ON TE.USER_ID = B.USER_ID)
-                SELECT CATEGORY_ID AS childId, name, ROUND(TOTAL_TRANSACTIONS/TOTAL_BM * 100, 0) AS percent
+                SELECT CATEGORY_ID AS childId, name, TOTAL_TRANSACTIONS, TOTAL_BM, ROUND(TOTAL_TRANSACTIONS/TOTAL_BM * 100, 0) AS percent
                 FROM (SELECT T.CATEGORY_ID, C.NAME, SUM(T.AMOUNT) AS TOTAL_TRANSACTIONS,
                 CASE WHEN TYPE_ALLOCATION = 'LBP' THEN GREATEST(BM.AMOUNT, SUM(T.AMOUNT)) ELSE ROUND(TB.TOTAL * BM.AMOUNT / 100, 0) END TOTAL_BM
                 FROM WISE_MONEY.TRANSACTIONS T
@@ -261,4 +263,36 @@ public interface TransactionRepo extends JpaRepository<Transaction, Long> {
         ORDER BY 2 DESC LIMIT 3;
         """, nativeQuery = true)
         List<DeltaTransactions> findDeltaTransactions(@Param("userId") Long userId);
+
+        @Query(value = """
+        SELECT SUM(AVERAGE) AS TOTAL
+        FROM (SELECT ROUND(SUM(AMOUNT) / (DATEDIFF(LAST_DAY(SYSDATE()), SYSDATE()) + 1), 0) AS AVERAGE
+        FROM (SELECT AMOUNT
+        FROM BUDGETS B
+        WHERE B.USER_ID = :userId AND MONTH = EXTRACT(MONTH FROM SYSDATE()) AND YEAR = EXTRACT(YEAR FROM SYSDATE())
+        UNION
+        SELECT SUM(AMOUNT)
+        FROM TRANSACTIONS T
+        INNER JOIN CATEGORIES C ON C.ID = T.CATEGORY_ID
+        WHERE C.TYPE = 'REVENU' AND C.USER_ID = :userId AND EXTRACT(MONTH FROM TRANSACTION_DATE) = EXTRACT(MONTH FROM SYSDATE())
+        AND EXTRACT(YEAR FROM TRANSACTION_DATE) = EXTRACT(YEAR FROM SYSDATE())
+        UNION
+        SELECT SUM(AMOUNT) * (-1)
+        FROM BUDGET_MANAGEMENT BM
+        WHERE USER_ID = :userId AND FREQUENCY = 1
+        UNION
+        SELECT SUM(T.AMOUNT) * (-1)
+        FROM TRANSACTIONS T
+        INNER JOIN CATEGORIES C ON C.ID = T.CATEGORY_ID
+        INNER JOIN BUDGET_MANAGEMENT BM ON BM.CATEGORY_ID = C.ID
+        WHERE BM.FREQUENCY = 2 AND C.TYPE = 'DEPENSE' AND C.USER_ID = :userId AND EXTRACT(MONTH FROM TRANSACTION_DATE) = EXTRACT(MONTH FROM SYSDATE())
+        AND EXTRACT(YEAR FROM TRANSACTION_DATE) = EXTRACT(YEAR FROM SYSDATE()) AND DATE_FORMAT(TRANSACTION_DATE, '%m/%d/%Y') < DATE_FORMAT(SYSDATE(), '%m/%d/%Y'))SUB
+        UNION
+        SELECT SUM(T.AMOUNT) * (-1)
+        FROM TRANSACTIONS T
+        INNER JOIN CATEGORIES C ON C.ID = T.CATEGORY_ID
+        INNER JOIN BUDGET_MANAGEMENT BM ON BM.CATEGORY_ID = C.ID
+        WHERE BM.FREQUENCY = 2 AND C.TYPE = 'DEPENSE' AND C.USER_ID = :userId AND DATE_FORMAT(TRANSACTION_DATE, '%m/%d/%Y') = DATE_FORMAT(SYSDATE(), '%m/%d/%Y'))SUB2;
+        """, nativeQuery = true)
+        Integer getAverageDaily(@Param("userId") Long userId);
 }

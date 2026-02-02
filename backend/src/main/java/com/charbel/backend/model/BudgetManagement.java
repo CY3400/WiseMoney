@@ -19,6 +19,8 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
 @Entity
@@ -60,6 +62,10 @@ public class BudgetManagement {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Min(1) @Max(2)
+    @Column(nullable = false)
+    private int frequency;
+
     @PrePersist
     void onCreate() {
         createdAt = LocalDateTime.now();
@@ -90,4 +96,7 @@ public class BudgetManagement {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public int getFrequency(){ return frequency; }
+    public void setFrequency(int frequency){ this.frequency = frequency; }
 }

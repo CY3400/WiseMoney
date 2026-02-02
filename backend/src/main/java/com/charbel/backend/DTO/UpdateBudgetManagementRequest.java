@@ -8,6 +8,7 @@ public class UpdateBudgetManagementRequest {
     private Long category;
     private BigDecimal amount;
     private TypeAllocation type;
+    private int frequency;
 
     public Long getCategory(){ return category; }
     public void setCategory(Long category){ this.category = category; }
@@ -17,4 +18,7 @@ public class UpdateBudgetManagementRequest {
 
     public BigDecimal getAmount(){ return amount; }
     public void setAmount(BigDecimal amount){ this.amount = amount; }
+
+    public int getFrequency(){ return frequency; }
+    public void setFreqgetFrequency(int frequency){ this.frequency = frequency; }
 }

@@ -49,6 +49,7 @@ public class BudgetManagementController {
         m.put("category", cat);
         m.put("amount", b.getAmount());
         m.put("typeAllocation", b.getType().name());
+        m.put("frequency", b.getFrequency());
 
         return m;
     }
@@ -59,7 +60,7 @@ public class BudgetManagementController {
 
         Category cat = catRepo.findById(req.getCategory()).orElseThrow(() -> new IllegalArgumentException("Gestion introuvable"));
 
-        BudgetManagement created = bMService.createBudgetManagement(user, cat, req.getAmount(), req.getType());
+        BudgetManagement created = bMService.createBudgetManagement(user, cat, req.getAmount(), req.getType(), req.getFrequency());
 
         return ResponseEntity.status(201).body(toMap(created));
     }
@@ -70,7 +71,7 @@ public class BudgetManagementController {
 
         Category cat = catRepo.findById(req.getCategory()).orElseThrow(() -> new IllegalArgumentException("Gestion introuvable"));
 
-        BudgetManagement updated = bMService.updateBudgetManagement(id, user, cat, req.getAmount(), req.getType());
+        BudgetManagement updated = bMService.updateBudgetManagement(id, user, cat, req.getAmount(), req.getType(), req.getFrequency());
 
         return ResponseEntity.ok(toMap(updated));
     }

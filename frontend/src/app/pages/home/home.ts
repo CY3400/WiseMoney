@@ -19,6 +19,7 @@ export class Home implements OnInit {
   psv: PSV[] = [];
   loadingPSV = false;
   epargne = 0;
+  average = 0;
   expandedNames = new Set<string>();
   childrenMap = new Map<number, CPV[]>();
   loadingChildren = new Set<number>();
@@ -42,6 +43,7 @@ export class Home implements OnInit {
     this.loadPercent();
     this.loadPSV();
     this.loadEpargne();
+    this.loadAverage();
 
     this.loadInsights(true);
   }
@@ -148,6 +150,18 @@ export class Home implements OnInit {
       error: (err) => {
         console.error('Erreur getEpargne():', err);
         this.epargne = 0;
+      }
+    })
+  }
+
+  loadAverage(): void {
+    this.api.getAverage().subscribe({
+      next: (ep) => {
+        this.average = ep ?? 0;
+      },
+      error: (err) => {
+        console.error('Erreur getAverage():', err);
+        this.average = 0;
       }
     })
   }

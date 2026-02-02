@@ -76,6 +76,7 @@ import { Observable, map } from 'rxjs';
     category: Id;
     amount: string;
     type: string;
+    frequency: number;
   }
 
   export interface GestionBudgetDto {
@@ -388,6 +389,12 @@ export class Api {
     return this.http.put<InsightSettingsDTO>(`${this.baseUrl}/insights/settings`, payload, {
       withCredentials: true
     });
+  }
+
+  getAverage(): Observable<number> {
+    return this.http.get<number>(`${this.baseUrl}/home/AVG`, {
+      withCredentials: true
+    })
   }
 
 }

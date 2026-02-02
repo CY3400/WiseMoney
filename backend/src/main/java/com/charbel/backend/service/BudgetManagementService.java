@@ -22,7 +22,7 @@ public class BudgetManagementService {
         this.repo = repo;
     }
 
-    public BudgetManagement createBudgetManagement(Users user, Category category, BigDecimal amount, TypeAllocation type) {
+    public BudgetManagement createBudgetManagement(Users user, Category category, BigDecimal amount, TypeAllocation type, int frequency) {
         if(user == null) {
             throw new IllegalArgumentException("Utilisateur requis");
         }
@@ -44,11 +44,12 @@ public class BudgetManagementService {
         b.setCategory(category);
         b.setAmount(amount);
         b.setType(type);
+        b.setFrequency(frequency);
 
         return repo.save(b);
     }
 
-    public BudgetManagement updateBudgetManagement(Long id, Users user, Category category, BigDecimal amount, TypeAllocation type) {
+    public BudgetManagement updateBudgetManagement(Long id, Users user, Category category, BigDecimal amount, TypeAllocation type, int frequency) {
         if(id == null) {
             throw new IllegalArgumentException("Identifiant de la transaction requise");
         }
@@ -74,6 +75,7 @@ public class BudgetManagementService {
         existing.setCategory(category);
         existing.setAmount(amount);
         existing.setType(type);
+        existing.setFrequency(frequency);
 
         return repo.save(existing);
     }

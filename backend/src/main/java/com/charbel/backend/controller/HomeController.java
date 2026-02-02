@@ -62,4 +62,13 @@ public class HomeController {
 
         return ResponseEntity.ok(epargne);
     }
+
+    @GetMapping("/AVG")
+    public ResponseEntity<Integer> getAverage(Authentication auth) {
+        Users user = userService.currentUser(auth);
+
+        Integer average = transactionService.getAverageDaily(user);
+
+        return ResponseEntity.ok(average);
+    }
 }

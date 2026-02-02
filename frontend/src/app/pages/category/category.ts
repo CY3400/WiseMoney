@@ -303,7 +303,8 @@ export class Category implements OnInit {
           const budgetPayload = {
             category: createdCategory.id,
             amount: '0',
-            type: 'LBP'
+            type: 'LBP',
+            frequency: 1
           } satisfies import('../../services/api').GestionBudgetRequest;
 
           this.api.createBudgetManagement(budgetPayload).subscribe({

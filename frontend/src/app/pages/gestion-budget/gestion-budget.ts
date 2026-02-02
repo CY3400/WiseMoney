@@ -13,9 +13,11 @@ interface Row {
   categoryId: Id;
   amount: string;
   allocationType: 'LBP' | '%';
+  frequency: number;
 
   editAmount: string;
   editType: 'LBP' | '%';
+  editFrequency: number;
   saving: boolean;
 
   categoryLabel: string;
@@ -101,6 +103,8 @@ export class GestionBudget implements OnInit {
 
           const pickCategoryField = (x: any) => x?.category ?? x?.categoryId ?? x?.category_id;
 
+          const pickFrequency = (x:any) => x?.frequency;
+
           this.rows = (mgmt ?? []).map((item: any) => {
             const catField = pickCategoryField(item);
             const catId = getCatId(catField);
@@ -108,6 +112,7 @@ export class GestionBudget implements OnInit {
             const parentId = cat?.parentId ?? null;
             const parent = parentId ? byId.get(parentId) : null;
 
+            const frequency = pickFrequency(item);
             const allocationType = pickAllocation(item);
             const amount = pickAmount(item);
 
@@ -116,8 +121,10 @@ export class GestionBudget implements OnInit {
               categoryId: catId,
               amount,
               allocationType,
+              frequency,
               editAmount: amount,
               editType: allocationType,
+              editFrequency: frequency,
               saving: false,
               categoryLabel: getCatName(catField, cat?.name ?? String(catId)),
               parentId,
@@ -168,7 +175,7 @@ export class GestionBudget implements OnInit {
   }
 
   isRowDirty(r: Row): boolean {
-    return r.editType !== r.allocationType || r.editAmount !== r.amount;
+    return r.editType !== r.allocationType || r.editAmount !== r.amount || r.editFrequency !== r.frequency;
   }
 
   isRowValid(r: Row): boolean {
@@ -185,7 +192,8 @@ export class GestionBudget implements OnInit {
     const payload: GestionBudgetRequest = {
       category: r.categoryId,
       amount: r.editAmount,
-      type: r.editType === '%' ? 'PERCENT' : 'LBP'
+      type: r.editType === '%' ? 'PERCENT' : 'LBP',
+      frequency: r.editFrequency
     };
 
     this.api.updateBudgetManagement(r.id, payload).subscribe({
