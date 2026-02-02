@@ -8,15 +8,22 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 
 BASE_URL = "http://localhost:8080"
-DATASET_URL = f"{BASE_URL}/ml/dataset?monthsBack=2&stepDays=5"
+DATASET_URL = f"{BASE_URL}/ml/dataset?monthsBack=24&stepDays=5"
 
-JWT = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGFyYmVseW1uQGdtYWlsLmNvbSIsImlhdCI6MTc2OTE3MTM1OSwiZXhwIjoxNzY5MjU3NzU5fQ.uudMjAlLqbyHkZLapWZLrTUIUiQxA4y6Uo049a0BwNI"
-
+JWT = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGFyYmVseW1uQGdtYWlsLmNvbSIsImlhdCI6MTc3MDAyMDk0OSwiZXhwIjoxNzcwMTA3MzQ5fQ.OIbuaTrwrI5GEMXXVZtnmDl15f_d028_s-z6SF_QXqo"
 HEADERS = {
     "Authorization": f"Bearer {JWT}"
 }
 
-model = Pipeline([
+FEATURES = [
+    "dayRatio",
+    "expensesSoFar",
+    "avgDailyExpense",
+    "maxExpenseSoFar",
+    "nexpenseTx",
+]
+
+MODEL = Pipeline([
     ("scaler", StandardScaler()),
     ("ridge", Ridge(alpha=1.0))
 ])
@@ -24,68 +31,70 @@ model = Pipeline([
 def fetch_dataset() -> pd.DataFrame:
     r = requests.get(DATASET_URL, headers=HEADERS)
     r.raise_for_status()
-    data = r.json()
-    df = pd.DataFrame(data)
-    return df
+    return pd.DataFrame(r.json())
 
 def train_and_predict(df: pd.DataFrame):
-    features = [
-        "day",
-        "expensesSoFar",
-        "avgDailyExpense",
-        "maxExpenseSoFar",
-        "nexpenseTx",
-    ]
 
-    for col in features + ["finalMonthExpenses"]:
-        if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors="coerce")
+    df["dayRatio"] = pd.to_numeric(df["day"], errors="coerce") / pd.to_numeric(df["daysInMonth"], errors="coerce")
 
-    train_df = df[(df["finalMonthExpenses"] > 0) &(df["nexpenseTx"] > 0)].copy()
+    for col in FEATURES + ["finalMonthExpenses"]:
+        df[col] = pd.to_numeric(df[col], errors="coerce")
 
-    if len(train_df) < 5:
-        print("Pas assez de données pour entraîner un modèle (il faut au moins ~5 lignes avec target).")
-        print("Augmente stepDays=1 ou attends d'avoir plus de jours/mois.")
+    train_df = df[
+        (df["finalMonthExpenses"] > 0) &
+        (df["nexpenseTx"] > 0)
+    ].copy()
+
+    if train_df.shape[0] < 5:
+        print("❌ Pas assez de données exploitables")
         return
-    
-    x = train_df[features]
-    y = train_df["finalMonthExpenses"]
 
-    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
+    train_df["remaining"] = (
+        train_df["finalMonthExpenses"] - train_df["expensesSoFar"]
+    )
 
-    model = Ridge(alpha=1.0)
-    model.fit(x_train, y_train)
+    X = train_df[FEATURES]
+    y = train_df["remaining"]
 
-    preds = model.predict(x_test)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.3, random_state=42
+    )
+
+    MODEL.fit(X_train, y_train)
+
+    preds = MODEL.predict(X_test)
     mae = mean_absolute_error(y_test, preds)
-    print(f"MAE (erreur moyenne absolue) ≈ {mae:,.0f} LBP")
+    print(f"MAE (reste à dépenser) ≈ {mae:,.0f} LBP")
 
     cur_df = df[df["finalMonthExpenses"].isna()].copy()
     if cur_df.empty:
-        print("Aucune ligne à prédire (mois courant introuvable).")
+        print("❌ Mois courant introuvable")
         return
-    
-    cur_df = cur_df.sort_values(["year","month","day"])
-    latest = cur_df.iloc[-1]
-    x_latest = latest[features].to_frame().T
 
-    pred_final = model.predict(x_latest)[0]
-    pred_final = max(0,pred_final)
+    latest = cur_df.sort_values(["year", "month", "day"]).iloc[-1]
+    X_latest = latest[FEATURES].to_frame().T
+
+    pred_remaining = max(0, MODEL.predict(X_latest)[0])
+    pred_final = latest["expensesSoFar"] + pred_remaining
 
     print("\n--- PREDICTION MOIS COURANT ---")
-    print(f"Mois: {int(latest['month'])}/{int(latest['year'])}  Jour snapshot: {int(latest['day'])}")
+    print(f"Mois: {int(latest['month'])}/{int(latest['year'])}")
+    print(f"Jour snapshot: {int(latest['day'])}")
     print(f"Dépenses so far: {latest['expensesSoFar']:,.0f} LBP")
     print(f"Revenus so far:  {latest['revenuesSoFar']:,.0f} LBP")
-    print(f"Prediction dépenses fin de mois: {pred_final:,.0f} LBP")
+    print(f"➡️ Prédiction fin de mois: {pred_final:,.0f} LBP")
 
-    coef = pd.Series(model.coef_, index=features).sort_values(key=abs, ascending=False)
-    print("\nTop coefficients (Ridge):")
-    print(coef.head(5))
+    coef = pd.Series(
+        MODEL.named_steps["ridge"].coef_,
+        index=FEATURES
+    ).sort_values(key=abs, ascending=False)
+
+    print("\nTop coefficients:")
+    print(coef)
 
 def main():
     df = fetch_dataset()
     print(f"Lignes dataset: {len(df)}")
-    print(df.head(3))
     train_and_predict(df)
 
 if __name__ == "__main__":
