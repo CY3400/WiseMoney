@@ -3,6 +3,7 @@ import { Api, PSV, CPV } from '../../services/api';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { InsightDTO } from '../../services/api';
+import type { Budget as BudgetDto } from '../../services/api';
 
 @Component({
   selector: 'app-home',
@@ -20,6 +21,12 @@ export class Home implements OnInit {
   loadingPSV = false;
   epargne = 0;
   average = 0;
+  budget = 0;
+  total = 0;
+  sumRev = 0;
+  sumDep = 0;
+  sumDepF = 0;
+  currentBudgetId: number | string | null = null;
   expandedNames = new Set<string>();
   childrenMap = new Map<number, CPV[]>();
   loadingChildren = new Set<number>();
@@ -44,6 +51,10 @@ export class Home implements OnInit {
     this.loadPSV();
     this.loadEpargne();
     this.loadAverage();
+    this.loadBudget();
+    this.loadSumRev();
+    this.loadSumDep();
+    this.loadSumDepF();
 
     this.loadInsights(true);
   }
@@ -52,6 +63,67 @@ export class Home implements OnInit {
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, '0');
     return `${y}-${m}`;
+  }
+
+  loadBudget(): void{
+    this.api.getBudget().subscribe({
+      next: (list: BudgetDto[]) => {
+        this.total = (list ?? []).reduce((sum, b) => {
+          const raw = b?.amount as unknown;
+          const n =
+            typeof raw === 'number'
+              ? raw
+              : parseFloat(String(raw).replace(',', '.'));
+          return sum + (Number.isFinite(n) ? n : 0);
+        }, 0);
+
+        const chosen = (list ?? [])[0];
+        this.currentBudgetId = chosen?.id ?? null;
+
+        this.budget = this.total > 0 ? this.total : 0;
+      },
+      error: () => {
+        this.total = 0;
+        this.currentBudgetId = null;
+        this.budget = 0;
+      }
+    });
+  }
+
+  loadSumRev(): void {
+    this.api.getSumRev().subscribe({
+      next: (ep) => {
+        this.sumRev = ep ?? 0;
+      },
+      error: (err) => {
+        console.error('Erreur getSumRev():', err);
+        this.sumRev = 0;
+      }
+    })
+  }
+
+  loadSumDep(): void {
+    this.api.getSumDep().subscribe({
+      next: (ep) => {
+        this.sumDep = ep ?? 0;
+      },
+      error: (err) => {
+        console.error('Erreur getSumDep():', err);
+        this.sumDep = 0;
+      }
+    })
+  }
+
+  loadSumDepF(): void {
+    this.api.getSumDepF().subscribe({
+      next: (ep) => {
+        this.sumDepF = ep ?? 0;
+      },
+      error: (err) => {
+        console.error('Erreur getSumDepF():', err);
+        this.sumDepF = 0;
+      }
+    })
   }
 
   loadInsights(force: boolean): void {

@@ -71,4 +71,31 @@ public class HomeController {
 
         return ResponseEntity.ok(average);
     }
+
+    @GetMapping("/SumRev")
+    public ResponseEntity<Integer> getSumRev(Authentication auth) {
+        Users user = userService.currentUser(auth);
+
+        Integer average = transactionService.getSumRevenues(user);
+
+        return ResponseEntity.ok(average);
+    }
+
+    @GetMapping("/SumDep")
+    public ResponseEntity<Integer> getSumDep(Authentication auth) {
+        Users user = userService.currentUser(auth);
+
+        Integer average = transactionService.getSumDepenses(user);
+
+        return ResponseEntity.ok(average);
+    }
+
+    @GetMapping("/SumDepF")
+    public ResponseEntity<Integer> getSumDepF(Authentication auth) {
+        Users user = userService.currentUser(auth);
+
+        Integer average = transactionService.getSumDepFuture(user);
+
+        return ResponseEntity.ok(average);
+    }
 }

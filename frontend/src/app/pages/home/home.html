@@ -4,7 +4,17 @@
   </div>
 }
 
-<div class="center-page">
+<div class="home">
+  <div class="main panorama">
+    <h2>Panorama Financier</h2>
+    <div class="section-title">Budget de Départ Mensuel: {{budget}} LBP</div>
+    <div class="section-title">Somme des Revenus Mensuels: {{sumRev}} LBP</div>
+    <div class="section-title">Somme des Dépenses Mensuelles: {{sumDep}} LBP</div>
+    <div class="section-title">Somme des Dépenses Mensuelles Prévues: {{sumDepF}} LBP</div>
+    <div class="section-title">Budget Final Présumé: {{epargne}} LBP</div>
+    <div class="section-title">Moyenne de Dépenses Quotidienne Conseillée: {{average < 0 ? 0 : average}} LBP</div>
+  </div>
+
   <div class="main">
     <div class="circular-progress" [style.background]="conicBackground">
       <div class="value-container" [style.color]="progressColor">
@@ -61,51 +71,5 @@
         </div>
       </div>
     }
-
-    <div class="section-title">Epargne: {{epargne}} LBP</div>
-    <div class="section-title">Moyenne quotidienne: {{average}} LBP</div>
-
-    <!--<div class="section-title">Aperçus</div>
-
-    @if(loadingInsights) {
-      <div class="hint" >Chargement...</div>
-    }
-
-    @if(!loadingInsights && insights.length === 0){
-      <div class="hint">
-        Aucun insight pour le moment.
-      </div>
-    }
-
-    <div style="display:flex; gap:10px; align-items:center; margin: 6px 0 14px;">
-      <span class="hint" style="margin:0;">
-        Mois: {{ monthInsight }}
-      </span>
-    </div>
-
-    @for(i of insights; track i.categoryId){
-      <div style="border: 1px solid #e6e6e6; border-radius: 12px; padding: 12px; margin-bottom: 10px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
-          <div style="font-weight:600;">{{ i.title }}</div>
-
-          <span style="padding:4px 10px; border-radius: 999px; font-size: 12px; color: #111; background: #eee;"
-                [style.background]="severityColor(i.severity)">
-            {{ severityLabel(i.severity) }} • {{ i.score }}
-          </span>
-        </div>
-
-        <div class="insight-message" style="margin-top: 8px;">
-          {{ i.message }}
-        </div>
-
-        @if(i.suggestions.length) {
-          <ul style="margin: 10px 0 0; padding-left: 18px;">
-            @for(s of i.suggestions; track s){
-              <li>{{ s }}</li>
-            }
-          </ul>
-        }
-      </div>
-    }
-  </div>-->
+  </div>
 </div>

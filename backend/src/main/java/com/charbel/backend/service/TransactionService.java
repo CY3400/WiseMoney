@@ -163,4 +163,31 @@ public class TransactionService {
 
         return repo.getAverageDaily(user.getId());
     }
+
+    @Transactional(readOnly = true)
+    public Integer getSumRevenues(Users user) {
+        if(user == null) {
+            throw new IllegalArgumentException("Utilisateur requis");
+        }
+
+        return repo.getSumRevenues(user.getId());
+    }
+
+    @Transactional(readOnly = true)
+    public Integer getSumDepenses(Users user) {
+        if(user == null) {
+            throw new IllegalArgumentException("Utilisateur requis");
+        }
+
+        return repo.getSumDepenses(user.getId());
+    }
+
+    @Transactional(readOnly = true)
+    public Integer getSumDepFuture(Users user) {
+        if(user == null) {
+            throw new IllegalArgumentException("Utilisateur requis");
+        }
+
+        return repo.getSumDepFuture(user.getId());
+    }
 }

@@ -397,4 +397,22 @@ export class Api {
     })
   }
 
+  getSumRev(): Observable<number> {
+    return this.http.get<number>(`${this.baseUrl}/home/SumRev`, {
+      withCredentials: true
+    })
+  }
+
+  getSumDep(): Observable<number> {
+    return this.http.get<number>(`${this.baseUrl}/home/SumDep`, {
+      withCredentials: true
+    })
+  }
+
+  getSumDepF(): Observable<number> {
+    return this.http.get<number>(`${this.baseUrl}/home/SumDepF`, {
+      withCredentials: true
+    })
+  }
+
 }
