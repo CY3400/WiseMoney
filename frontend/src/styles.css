@@ -244,21 +244,28 @@ p {
 }
 
 @media (max-width: 576px) {
-    .main, .error {
-        width: 100%;
-    }
-
     .main {
-        height: 70%;
+        height: auto;
     }
 
-    .sub-main {
-        flex-direction: column;
-    }
+  .home {
+    flex-direction: column;
+    align-items: center;
+  }
 
-    .sub-main div {
-        width: 60%;
-    }
+  .home > .main:last-child {
+    order: 1;
+  }
+
+  .left-column {
+    order: 2;
+    width: 100%;
+    align-items: center;
+  }
+
+  .left-column > .main {
+    width: min(520px, 100%);
+  }
 }
 
 @media (max-width: 360px) {

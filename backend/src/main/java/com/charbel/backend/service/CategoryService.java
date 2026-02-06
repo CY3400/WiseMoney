@@ -149,4 +149,22 @@ public class CategoryService {
 
         return repo.getTopExpensesByMonths(user.getId());
     }
+
+    @Transactional(readOnly = true)
+    public List<TopExpensesByMonth> getExpensesDifference(Users user) {
+        if(user == null) {
+            throw new IllegalArgumentException("Utilisateur requis");
+        }
+
+        return repo.getExpensesDifference(user.getId(), 0);
+    }
+
+    @Transactional(readOnly = true)
+    public List<TopExpensesByMonth> getExpensesDifferenceUp(Users user) {
+        if(user == null) {
+            throw new IllegalArgumentException("Utilisateur requis");
+        }
+
+        return repo.getExpensesDifference(user.getId(), 1);
+    }
 }

@@ -3,7 +3,7 @@ import { Api, PSV, CPV } from '../../services/api';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { InsightDTO } from '../../services/api';
-import type { Budget as BudgetDto } from '../../services/api';
+import type { Budget as BudgetDto, Top } from '../../services/api';
 
 @Component({
   selector: 'app-home',
@@ -26,6 +26,8 @@ export class Home implements OnInit {
   sumRev = 0;
   sumDep = 0;
   sumDepF = 0;
+  expDiff: Top[] = [];
+  expDiffUp: Top[] = [];
   currentBudgetId: number | string | null = null;
   expandedNames = new Set<string>();
   childrenMap = new Map<number, CPV[]>();
@@ -55,6 +57,8 @@ export class Home implements OnInit {
     this.loadSumRev();
     this.loadSumDep();
     this.loadSumDepF();
+    this.loadExpDiff();
+    this.loadExpDiffUp();
 
     this.loadInsights(true);
   }
@@ -88,6 +92,30 @@ export class Home implements OnInit {
         this.budget = 0;
       }
     });
+  }
+
+  loadExpDiff(): void {
+    this.api.getExpDiff().subscribe({
+      next: (rows: Top[]) => {
+        this.expDiff = rows ?? [];
+      },
+      error: (err) => {
+        console.error('Erreur getExpDiff():', err);
+        this.expDiff = [];
+      }
+    })
+  }
+
+  loadExpDiffUp(): void {
+    this.api.getExpDiffUp().subscribe({
+      next: (rows: Top[]) => {
+        this.expDiffUp = rows ?? [];
+      },
+      error: (err) => {
+        console.error('Erreur getExpDiff():', err);
+        this.expDiffUp = [];
+      }
+    })
   }
 
   loadSumRev(): void {

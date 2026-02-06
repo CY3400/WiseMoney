@@ -415,4 +415,16 @@ export class Api {
     })
   }
 
+  getExpDiff(): Observable<Top[]> {
+    return this.http.get<Top[]>(`${this.baseUrl}/categories/expDiff`, {
+      withCredentials: true
+    })
+  }
+
+  getExpDiffUp(): Observable<Top[]> {
+    return this.http.get<Top[]>(`${this.baseUrl}/categories/expDiffUp`, {
+      withCredentials: true
+    })
+  }
+
 }

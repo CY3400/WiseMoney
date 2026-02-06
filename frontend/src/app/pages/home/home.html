@@ -5,17 +5,46 @@
 }
 
 <div class="home">
-  <div class="main panorama">
-    <h2>Panorama Financier</h2>
-    <div class="section-title">Budget de Départ Mensuel: {{budget}} LBP</div>
-    <div class="section-title">Somme des Revenus Mensuels: {{sumRev}} LBP</div>
-    <div class="section-title">Somme des Dépenses Mensuelles: {{sumDep}} LBP</div>
-    <div class="section-title">Somme des Dépenses Mensuelles Prévues: {{sumDepF}} LBP</div>
-    <div class="section-title">Budget Final Présumé: {{epargne}} LBP</div>
-    <div class="section-title">Moyenne de Dépenses Quotidienne Conseillée: {{average < 0 ? 0 : average}} LBP</div>
-  </div>
+  <div class="left-column">
+    <div class="main panorama">
+      <h2>Panorama Financier</h2>
+      <div class="section-title">Budget de Départ Mensuel: {{budget}} LBP</div>
+      <div class="section-title">Somme des Revenus Mensuels: {{sumRev}} LBP</div>
+      <div class="section-title">Somme des Dépenses Mensuelles: {{sumDep}} LBP</div>
+      <div class="section-title">Somme des Dépenses Mensuelles Prévues: {{sumDepF}} LBP</div>
+      <div class="section-title">Budget Final Présumé: {{epargne}} LBP</div>
+      <div class="section-title">Moyenne de Dépenses Quotidienne Conseillée: {{average < 0 ? 0 : average}} LBP</div>
+    </div>
 
-  <div class="main">
+    @if(expDiff.length > 0 || expDiffUp.length > 0) {
+      <div class="main diff">
+        <h2>Changements Marquants des Dépenses</h2>
+        @if(expDiff.length > 0) {
+          <div class="section-title">
+            Réduction notable des dépenses:
+            <ul>
+              @for(e of expDiff; track e.name){
+                <li>{{e.name}}: {{e.total}}%</li>
+              }
+            </ul>
+          </div>
+        }
+
+        @if(expDiffUp.length > 0) {
+          <div class="section-title">
+            Augmentation significative des dépenses
+            <ul>
+              @for(e of expDiffUp; track e.name){
+                <li>{{e.name}}: {{e.total}}%</li>
+              }
+            </ul>
+          </div>
+        }
+      </div>
+    }
+  </div>
+  
+  <div class="main center">
     <div class="circular-progress" [style.background]="conicBackground">
       <div class="value-container" [style.color]="progressColor">
         {{percent}}%
