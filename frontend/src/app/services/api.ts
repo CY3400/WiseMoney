@@ -117,6 +117,13 @@ import { Observable, map } from 'rxjs';
     gap: number;
   }
 
+  export type Objectif = {
+    id: Id,
+    month: number;
+    year: number;
+    objectif: number | string;
+  }
+
   export type InsightSeverity = 'INFO' | 'WARNING' | 'CRITICAL';
 
   export type InsightType = 'RUN_RATE_OVER_BUDGET'| 'MIDMONTH_BUDGET_CHECK'| 'SPIKE_SPENDING'| 'DAILY_SPENDING_CAP'| 'LAST_SPRINT';
@@ -389,6 +396,24 @@ export class Api {
     return this.http.put<InsightSettingsDTO>(`${this.baseUrl}/insights/settings`, payload, {
       withCredentials: true
     });
+  }
+
+  updateObjectif(id: Id, payload: {amount: number}): Observable<Objectif> {
+    return this.http.put<Objectif>(`${this.baseUrl}/objectives/${id}`, payload, {
+      withCredentials: true
+    })
+  }
+
+  getObjectives(): Observable<Objectif[]> {
+    return this.http.get<Objectif[]>(`${this.baseUrl}/objectives`, {
+      withCredentials: true
+    })
+  }
+
+  getSumObjectives(): Observable<number> {
+    return this.http.get<number>(`${this.baseUrl}/objectives/sum`, {
+      withCredentials: true
+    })
   }
 
   getAverage(): Observable<number> {

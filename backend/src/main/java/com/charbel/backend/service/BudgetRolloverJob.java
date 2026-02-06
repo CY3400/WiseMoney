@@ -17,6 +17,7 @@ import com.charbel.backend.model.Budget;
 import com.charbel.backend.model.CategoryType;
 import com.charbel.backend.model.Users;
 import com.charbel.backend.repo.BudgetRepo;
+import com.charbel.backend.repo.ObjectivesRepo;
 import com.charbel.backend.repo.TransactionRepo;
 import com.charbel.backend.repo.UserRepo;
 
@@ -31,12 +32,16 @@ public class BudgetRolloverJob {
     private final TransactionRepo transactionRepo;
     private final UserRepo userRepo;
     private final BudgetService budgetService;
+    private final ObjectivesRepo objectivesRepo;
+    private final ObjectivesService objectivesService;
 
-    public BudgetRolloverJob(BudgetRepo budgetRepo, TransactionRepo transactionRepo, UserRepo userRepo, BudgetService budgetService) {
+    public BudgetRolloverJob(BudgetRepo budgetRepo, TransactionRepo transactionRepo, UserRepo userRepo, BudgetService budgetService, ObjectivesRepo objectivesRepo, ObjectivesService objectivesService) {
         this.budgetRepo = budgetRepo;
         this.transactionRepo = transactionRepo;
         this.userRepo = userRepo;
         this.budgetService = budgetService;
+        this.objectivesRepo = objectivesRepo;
+        this.objectivesService = objectivesService;
     }
 
     @EventListener(ApplicationReadyEvent.class)
@@ -54,8 +59,33 @@ public class BudgetRolloverJob {
     public void monthlyRollover() {
         try {
             runOnceForAllUsers();
+            runObjectives();
         } catch (Exception ex) {
             log.warn("BudgetRolloverJob monthlyRollover failed: {}", ex.getMessage());
+        }
+    }
+
+    private void runObjectives() {
+        YearMonth now = YearMonth.now(ZONE);
+        int targetMonth = now.getMonthValue();
+        int targetYear = now.getYear();
+
+        List<Users> users = userRepo.findAll();
+
+        if (users.isEmpty()) {
+            log.info("Aucun utilisateur - rien à faire");
+            return;
+        }
+
+        for (Users user : users) {
+            boolean exists = objectivesRepo.existsByUserAndMonthAndYear(user, targetMonth, targetYear);
+
+            if(exists) {
+                log.debug("Objectif déjà existant pour user={}, {}/{}", user.getEmail(), targetMonth, targetYear);
+                continue;
+            }
+
+            objectivesService.createObjectif(user, BigDecimal.ZERO);
         }
     }
 

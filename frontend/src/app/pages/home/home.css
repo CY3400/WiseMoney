@@ -145,27 +145,26 @@
   align-items: flex-start;
 }
 
-.left-column {
+.left-column, .right-column {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.left-column {
+.left-column, .right-column {
   width: fit-content;
 }
 
-.left-column > *{
+.left-column > *, .right-column > *{
   width: auto;
   text-align: left;
 }
 
-.left-column > .main > * {
+.left-column > .main > *, .right-column > .main > * {
   width: 100%;
   margin: 0px;
   margin-bottom: 5px;
 }
-
 .center {
   width: 100%;
 }
@@ -191,5 +190,9 @@ li {
 
   .home > .left-column {
     order: 2;
+  }
+
+  .home > .right-column {
+    order: 3;
   }
 }

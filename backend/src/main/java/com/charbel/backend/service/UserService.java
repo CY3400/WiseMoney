@@ -1,5 +1,7 @@
 package com.charbel.backend.service;
 
+import java.math.BigDecimal;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,12 +20,14 @@ public class UserService {
     private final AuthenticationManager authManager;
     private final JWTService jwtService;
     private final PasswordEncoder passwordEncoder;
+    private final ObjectivesService objectivesService;
 
-    public UserService(UserRepo repo, AuthenticationManager authManager, JWTService jwtService, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepo repo, AuthenticationManager authManager, JWTService jwtService, PasswordEncoder passwordEncoder, ObjectivesService objectivesService) {
         this.repo = repo;
         this.authManager = authManager;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
+        this.objectivesService = objectivesService;
     }
 
     @Transactional
@@ -55,7 +59,9 @@ public class UserService {
         user.setLastName(last);
         user.setPassword(passwordEncoder.encode(rawPw));
 
-        return repo.save(user);
+        Users saved = repo.save(user);
+        objectivesService.createObjectif(saved, BigDecimal.ZERO);
+        return saved;
     }
 
     public String authenticate(String email, String password){

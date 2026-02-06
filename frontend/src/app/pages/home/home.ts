@@ -26,6 +26,8 @@ export class Home implements OnInit {
   sumRev = 0;
   sumDep = 0;
   sumDepF = 0;
+  sum = 0;
+  sumPercent = 0;
   expDiff: Top[] = [];
   expDiffUp: Top[] = [];
   currentBudgetId: number | string | null = null;
@@ -59,6 +61,7 @@ export class Home implements OnInit {
     this.loadSumDepF();
     this.loadExpDiff();
     this.loadExpDiffUp();
+    this.loadSumObjectives();
 
     this.loadInsights(true);
   }
@@ -67,6 +70,18 @@ export class Home implements OnInit {
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, '0');
     return `${y}-${m}`;
+  }
+  private loadSumObjectives(): void {
+    this.api.getSumObjectives().subscribe({
+      next: (ep) => {
+        this.sum = ep;
+        this.sumPercent = Math.round(this.epargne/this.sum * 100);
+      },
+      error:() => {
+        this.sum = 0;
+        this.sumPercent = 0;
+      }
+    })
   }
 
   loadBudget(): void{
@@ -272,6 +287,14 @@ export class Home implements OnInit {
     if (p <= 50) return '#f1c40f';
     if (p <= 75) return '#e67e22';
     return '#e74c3c';
+  }
+
+  barColorReverse(p: number): string {
+    if (p === 0) return '#e74c3c';
+    if (p <= 25) return '#e67e22';
+    if (p <= 50) return '#f1c40f';
+    if (p <= 75) return '#2ecc71';
+    return '#bfbfbf'; 
   }
 
   onToggleParent(p: PSV): void {

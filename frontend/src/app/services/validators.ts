@@ -7,5 +7,6 @@ export const Validators = {
   fullNameRegex: /^(?!.*([ '-])\1)(?!.*(^|[^A-Za-zÀ-ÖØ-öø-ÿ])[ '-]|[ '-]([^A-Za-zÀ-ÖØ-öø-ÿ]|$))[A-Za-zÀ-ÖØ-öø-ÿ' -]{2,}$/,
   passwordRegex: /^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+=?.,:;{}\[\]<>\-]).{8,20}$/,
   hasLetter: /[A-Za-zÀ-ÖØ-öø-ÿ]/,
-  numberRegex: /^(?!\.)\d+(?:\.\d{0,2})?$/
+  numberRegex: /^(?!\.)\d+(?:\.\d{0,2})?$/,
+  numberObjectifRegex: /^-?\d*(?:[.,]?\d{0,2})?$/
 };

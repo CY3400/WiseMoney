@@ -101,4 +101,15 @@
       </div>
     }
   </div>
+  
+  <div class="right-column">
+    <div class="main objectif">
+      <h2>Objectif d'épargne</h2>
+      <div class="section-title">Epargne de Fin de Mois Présumé: {{epargne}} LBP</div>
+      <div class="section-title">Objectif à atteindre: {{sum}} LBP</div>
+      <div class="bar">
+        <div class="fill" [style.width.%]="sumPercent" [style.background]="barColorReverse(sumPercent)"></div>
+      </div>
+    </div>
+  </div>
 </div>
