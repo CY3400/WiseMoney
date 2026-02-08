@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.charbel.backend.DTO.CreateCategoryRequest;
-import com.charbel.backend.DTO.TopExpensesByMonth;
+import com.charbel.backend.DTO.ExpDiffDTO;
 import com.charbel.backend.DTO.UpdateCategoryRequest;
 import com.charbel.backend.model.Category;
 import com.charbel.backend.model.CategoryType;
@@ -125,19 +125,19 @@ public class CategoryController {
     }
 
     @GetMapping("/expDiff")
-    public ResponseEntity<List<TopExpensesByMonth>> getExpDiff(Authentication auth) {
+    public ResponseEntity<List<ExpDiffDTO>> getExpDiff(Authentication auth) {
         Users user = userService.currentUser(auth);
 
-        List<TopExpensesByMonth> average = categoryService.getExpensesDifference(user);
+        List<ExpDiffDTO> average = categoryService.getExpensesDifference(user);
 
         return ResponseEntity.ok(average);
     }
 
     @GetMapping("/expDiffUp")
-    public ResponseEntity<List<TopExpensesByMonth>> getExpDiffUp(Authentication auth) {
+    public ResponseEntity<List<ExpDiffDTO>> getExpDiffUp(Authentication auth) {
         Users user = userService.currentUser(auth);
 
-        List<TopExpensesByMonth> average = categoryService.getExpensesDifferenceUp(user);
+        List<ExpDiffDTO> average = categoryService.getExpensesDifferenceUp(user);
 
         return ResponseEntity.ok(average);
     }

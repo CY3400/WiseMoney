@@ -112,6 +112,13 @@ import { Observable, map } from 'rxjs';
     total: string;
   }
 
+  export type ExpDiff = {
+    name: string;
+    total: string;
+    current: string;
+    old: string;
+  }
+
   export type Gap = {
     currentAmount: string;
     gap: number;
@@ -440,14 +447,14 @@ export class Api {
     })
   }
 
-  getExpDiff(): Observable<Top[]> {
-    return this.http.get<Top[]>(`${this.baseUrl}/categories/expDiff`, {
+  getExpDiff(): Observable<ExpDiff[]> {
+    return this.http.get<ExpDiff[]>(`${this.baseUrl}/categories/expDiff`, {
       withCredentials: true
     })
   }
 
-  getExpDiffUp(): Observable<Top[]> {
-    return this.http.get<Top[]>(`${this.baseUrl}/categories/expDiffUp`, {
+  getExpDiffUp(): Observable<ExpDiff[]> {
+    return this.http.get<ExpDiff[]>(`${this.baseUrl}/categories/expDiffUp`, {
       withCredentials: true
     })
   }

@@ -35,7 +35,12 @@
             Augmentation significative des dépenses
             <ul>
               @for(e of expDiffUp; track e.name){
-                <li>{{e.name}}: {{e.total}}%</li>
+                @if(e.old != '1'){
+                  <li>{{e.name}}: {{e.total}}%</li>
+                }
+                @else {
+                  <li>{{e.name}}: Nouveau</li>
+                }
               }
             </ul>
           </div>

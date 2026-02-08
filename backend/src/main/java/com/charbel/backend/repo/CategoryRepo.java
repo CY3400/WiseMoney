@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.charbel.backend.DTO.ExpDiffDTO;
 import com.charbel.backend.DTO.TopExpensesByMonth;
 import com.charbel.backend.model.Category;
 import com.charbel.backend.model.CategoryType;
@@ -53,7 +54,7 @@ public interface CategoryRepo extends JpaRepository<Category, Long> {
   WHERE USER_ID = :userId AND EXTRACT(MONTH FROM SYSDATE()) = EXTRACT(MONTH FROM TRANSACTION_DATE) AND EXTRACT(YEAR FROM SYSDATE()) = EXTRACT(YEAR FROM TRANSACTION_DATE)
   GROUP BY USER_ID, CATEGORY_ID)
   SELECT *
-  FROM (SELECT C.NAME, CASE WHEN CURRENT_AMOUNT >= OLD_AMOUNT THEN 100 - ROUND(COALESCE(CURRENT_AMOUNT,0) * 100 / COALESCE(OLD_AMOUNT,1), 0)
+  FROM (SELECT C.NAME, COALESCE(CURRENT_AMOUNT,0) AS CURRENT,COALESCE(OLD_AMOUNT,1) AS OLD, CASE WHEN CURRENT_AMOUNT >= OLD_AMOUNT THEN 100 - ROUND(COALESCE(CURRENT_AMOUNT,0) * 100 / COALESCE(OLD_AMOUNT,1), 0)
   ELSE (100 - ROUND(COALESCE(CURRENT_AMOUNT,0) * 100 / COALESCE(OLD_AMOUNT,1), 2)) * (-1) END AS TOTAL
   FROM CATEGORIES C
   LEFT JOIN OLD_MONTH OM ON OM.OLD_CATEGORY = C.ID
@@ -62,6 +63,6 @@ public interface CategoryRepo extends JpaRepository<Category, Long> {
   WHERE (TOTAL < 0 AND :status = 0) OR (TOTAL > 0 AND :status = 1)
   ORDER BY TOTAL;
   """, nativeQuery = true)
-  List<TopExpensesByMonth> getExpensesDifference(@Param("userId") Long userId, @Param("status") Integer status);
+  List<ExpDiffDTO> getExpensesDifference(@Param("userId") Long userId, @Param("status") Integer status);
 }
 

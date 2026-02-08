@@ -3,7 +3,7 @@ import { Api, PSV, CPV } from '../../services/api';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { InsightDTO } from '../../services/api';
-import type { Budget as BudgetDto, Top } from '../../services/api';
+import type { Budget as BudgetDto, ExpDiff, Top } from '../../services/api';
 
 @Component({
   selector: 'app-home',
@@ -28,8 +28,8 @@ export class Home implements OnInit {
   sumDepF = 0;
   sum = 0;
   sumPercent = 0;
-  expDiff: Top[] = [];
-  expDiffUp: Top[] = [];
+  expDiff: ExpDiff[] = [];
+  expDiffUp: ExpDiff[] = [];
   currentBudgetId: number | string | null = null;
   expandedNames = new Set<string>();
   childrenMap = new Map<number, CPV[]>();
@@ -111,7 +111,7 @@ export class Home implements OnInit {
 
   loadExpDiff(): void {
     this.api.getExpDiff().subscribe({
-      next: (rows: Top[]) => {
+      next: (rows: ExpDiff[]) => {
         this.expDiff = rows ?? [];
       },
       error: (err) => {
@@ -123,8 +123,9 @@ export class Home implements OnInit {
 
   loadExpDiffUp(): void {
     this.api.getExpDiffUp().subscribe({
-      next: (rows: Top[]) => {
+      next: (rows: ExpDiff[]) => {
         this.expDiffUp = rows ?? [];
+        console.log(this.expDiffUp);
       },
       error: (err) => {
         console.error('Erreur getExpDiff():', err);

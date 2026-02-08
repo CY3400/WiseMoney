@@ -6,6 +6,7 @@ import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.charbel.backend.DTO.ExpDiffDTO;
 import com.charbel.backend.DTO.TopExpensesByMonth;
 import com.charbel.backend.model.Category;
 import com.charbel.backend.model.CategoryType;
@@ -151,7 +152,7 @@ public class CategoryService {
     }
 
     @Transactional(readOnly = true)
-    public List<TopExpensesByMonth> getExpensesDifference(Users user) {
+    public List<ExpDiffDTO> getExpensesDifference(Users user) {
         if(user == null) {
             throw new IllegalArgumentException("Utilisateur requis");
         }
@@ -160,7 +161,7 @@ public class CategoryService {
     }
 
     @Transactional(readOnly = true)
-    public List<TopExpensesByMonth> getExpensesDifferenceUp(Users user) {
+    public List<ExpDiffDTO> getExpensesDifferenceUp(Users user) {
         if(user == null) {
             throw new IllegalArgumentException("Utilisateur requis");
         }
