@@ -233,13 +233,13 @@ p {
 
 @media (max-width: 992px) {
     .main, .error {
-        width: 50%;
+        width: 60%;
     }
 }
 
 @media (max-width: 768px) {
     .main, .error {
-        width: 70%;
+        width: 80%;
     }
 }
 
@@ -280,7 +280,7 @@ p {
 
 @media (min-width: 1200px) {
     .main, .error {
-        width: 30%;
+        width: 40%;
     }
 }
 html, body { height: 100%; }

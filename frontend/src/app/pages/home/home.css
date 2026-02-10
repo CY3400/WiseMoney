@@ -28,6 +28,7 @@
 
 .main {
     align-items: center;
+    text-align: left !important;
 }
 
 .section-title {
@@ -91,7 +92,8 @@
   font-variant-numeric: tabular-nums;
   color: #444;
   min-width: 40px;
-  text-align: right;
+  text-align: left;
+  white-space: nowrap;
 }
 
 .chevron {

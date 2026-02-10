@@ -4,4 +4,5 @@ public interface ParentSpendView {
     Long getParentId();
     String getName();
     Integer getTotal();
+    Integer getCount();
 }

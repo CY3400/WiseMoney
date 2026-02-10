@@ -90,6 +90,7 @@ import { Observable, map } from 'rxjs';
     parentId: number;
     name: string;
     total: number;
+    count: number;
   }
 
   export type CPV = {
@@ -97,6 +98,8 @@ import { Observable, map } from 'rxjs';
     name: string;
     amount: number;
     percent: number;
+    total: number;
+    budget: number;
   }
 
   export type SMStats = {

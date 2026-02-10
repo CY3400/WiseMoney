@@ -240,11 +240,13 @@ export class Home implements OnInit {
     this.loadingPSV = true;
     this.api.getPSV().subscribe({
       next: (rows) => {
+        console.log(rows);
         this.psv = (rows ?? [])
           .map(r => ({
             parentId: Number((r as any).parentId ?? (r as any).parent_id ?? 0),
             name: String(r.name),
-            total: r.total
+            total: r.total,
+            count: r.count
           }))
           .sort((a, b) => b.total - a.total);
 
@@ -317,11 +319,14 @@ export class Home implements OnInit {
     this.loadingChildren.add(parentId);
     this.api.getCPV(parentId).subscribe({
       next: (rows) => {
+        console.log(rows);
         const list: CPV[] = (rows ?? []).map(r => ({
           childId: Number((r as any).childId ?? (r as any).child_id ?? 0),
           name: String(r.name),
           amount: Number(r.amount ?? 0),
-          percent: Number(r.percent)
+          percent: Number(r.percent),
+          total: Number(r.total),
+          budget: Number(r.budget)
         }));
         this.childrenMap.set(parentId, list);
         this.loadingChildren.delete(parentId);

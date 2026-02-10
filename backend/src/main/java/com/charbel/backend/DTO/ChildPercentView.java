@@ -7,4 +7,5 @@ public interface ChildPercentView {
   BigDecimal getAmount();
   BigDecimal getTotal();
   Integer getPercent();
+  BigDecimal getBudget();
 }
