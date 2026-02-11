@@ -5,4 +5,6 @@ public interface ParentSpendView {
     String getName();
     Integer getTotal();
     Integer getCount();
+    Integer getTransactions();
+    Integer getBudget();
 }

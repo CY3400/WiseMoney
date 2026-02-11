@@ -246,7 +246,9 @@ export class Home implements OnInit {
             parentId: Number((r as any).parentId ?? (r as any).parent_id ?? 0),
             name: String(r.name),
             total: r.total,
-            count: r.count
+            count: r.count,
+            transactions: r.transactions,
+            budget: r.budget
           }))
           .sort((a, b) => b.total - a.total);
 

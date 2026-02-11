@@ -91,6 +91,8 @@ import { Observable, map } from 'rxjs';
     name: string;
     total: number;
     count: number;
+    transactions: number;
+    budget: number;
   }
 
   export type CPV = {
