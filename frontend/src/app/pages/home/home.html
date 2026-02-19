@@ -100,7 +100,7 @@
           @for(ch of (childrenMap.get(p.parentId) || []); track ch.childId){
             <div class="child-row">
                 @if(ch.amount == 0) {
-                  <span class="parent-value">{{ ch.name }} {{ch.total}} LBP</span>
+                  <span class="parent-value">{{ ch.name }}: {{ch.total}} LBP</span>
                 }
                 @else {
                   <span class="parent-name">{{ ch.name }}</span>
@@ -128,6 +128,7 @@
       <h2>Objectif d'épargne</h2>
       <div class="section-title">Epargne de Fin de Mois Présumé: {{epargne}} LBP</div>
       <div class="section-title">Objectif à atteindre: {{sum}} LBP</div>
+      <div class="section-title">Pourcentage d'Epargne Atteint: {{sumPercent}}%</div>
       <div class="section-title">Montant Restant:
         @if(sum - epargne < 0) {
           0 LBP
