@@ -74,13 +74,22 @@
       <div class="parent-row">
         <button class="parent-line" type="button" (click)="onToggleParent(p)" [attr.aria-expanded]="isExpanded(p.name)">
           <span class="chevron" [class.open]="isExpanded(p.name)"></span>
-          @if(p.count > 0){
+          @if(p.count > 0 && p.total < 100){
             <span class="parent-name">{{ p.name }}</span>
             <div class="bar-container">
               <div class="bar">
                 <div class="fill" [style.width.%]="p.total" [style.background]="barColor(p.total)"></div>
               </div>
               <span class="parent-value">{{ p.total }}% ({{p.transactions}} LBP/{{p.budget}} LBP)</span>
+            </div>
+          }
+          @else if(p.count > 0 && p.total == 100){
+            <span class="parent-name">{{ p.name }}</span>
+            <div class="bar-container">
+              <div class="bar">
+                <div class="fill" [style.width.%]="p.total" [style.background]="barColor(p.total)"></div>
+              </div>
+              <span class="parent-value">{{ p.total }}% ({{p.budget}} LBP)</span>
             </div>
           }
           @else {
