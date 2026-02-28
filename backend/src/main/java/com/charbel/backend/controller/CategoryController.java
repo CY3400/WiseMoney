@@ -109,7 +109,7 @@ public class CategoryController {
     }
 
     @GetMapping("/children")
-    public ResponseEntity<List<Map<String, Object>>> rootChildren(Authentication auth, @RequestParam(defaultValue = "true") boolean onlyActive) {
+    public ResponseEntity<List<Map<String, Object>>> rootChildren(Authentication auth, @RequestParam(defaultValue = "false") boolean onlyActive) {
         Users user = userService.currentUser(auth);
 
         List<Map<String, Object>> root = categoryService.getChildrenCategories(user, onlyActive).stream().map(
