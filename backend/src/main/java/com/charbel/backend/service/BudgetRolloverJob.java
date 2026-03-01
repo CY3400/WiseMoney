@@ -49,6 +49,7 @@ public class BudgetRolloverJob {
     public void onStartupCatchup() {
         try {
             runOnceForAllUsers();
+            runObjectives();
         } catch (Exception ex) {
             log.warn("BudgetRolloverJob onStartupCatchup failed: {}", ex.getMessage());
         }
