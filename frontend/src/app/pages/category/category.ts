@@ -8,25 +8,26 @@ import { ParentCategoryDto, CategoryDto } from '../../services/api';
 import { finalize } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-type CategoryTypeCode = 'DEPENSE' | 'REVENU';
+type CategoryTypeCode = 'DEPENSE' | 'REVENU' | 'Les_2';
 type Id = number | string;
 
 interface Option {
   id: Id;
   label: string;
-  type: CategoryTypeCode;
-}
-
-const CATEGORY_TYPE_LABELS: Record<CategoryTypeCode | string, string> = {
-  DEPENSE: 'Dépense',
-  REVENU: 'Revenu',
-  LES_2: 'Les 2'
+  type: string;
 }
 
 interface Row extends CategoryDto {
   editName: string;
+  editParentId?: Id | null;
   saving: boolean;
 }
+
+const CATEGORY_TYPE_LABELS: Record<string, string> = {
+  DEPENSE: 'Dépense',
+  REVENU: 'Revenu',
+  Les_2: 'Les 2'
+};
 
 @Component({
   selector: 'app-category',
@@ -40,9 +41,10 @@ export class Category implements OnInit {
 
   categoryTypeOptions: CategoryTypeCode[] = [];
 
-  parentOptions: Option[] = [];
+  parentOptionsForm: Option[] = [];
+  parentOptionsGrid: Option[] = [];
+
   selectedParentId: Id | null = null;
-  trackById = (_: number, o: { id: number | string }) => o.id;
 
   loadingParents = false;
   parentsErr = '';
@@ -54,9 +56,18 @@ export class Category implements OnInit {
   pageSize = 5;
   pageSizes = [5, 10, 20, 50];
 
-  get total(): number { return this.totalGroups; }
-  get totalGroups(): number {return this.groups.length;};
-  get totalPages(): number { return Math.max(1, Math.ceil(this.totalGroups / this.pageSize)); }
+  get total(): number {
+    return this.totalGroups;
+  }
+
+  get totalGroups(): number {
+    return this.groups.length;
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.totalGroups / this.pageSize));
+  }
+
   get pagedGroups(): Array<{ parentId: Id | null; parentLabel: string; items: Row[] }> {
     const start = this.pageIndex * this.pageSize;
     return this.groups.slice(start, start + this.pageSize);
@@ -66,11 +77,16 @@ export class Category implements OnInit {
     this.pageIndex = Math.min(Math.max(0, i), this.totalPages - 1);
   }
 
-  next() { this.goToPage(this.pageIndex + 1); }
-  prev() { this.goToPage(this.pageIndex - 1); }
+  next() {
+    this.goToPage(this.pageIndex + 1);
+  }
+
+  prev() {
+    this.goToPage(this.pageIndex - 1);
+  }
 
   setPageSize(n: number) {
-    this.pageSize = n;
+    this.pageSize = Number(n);
     this.goToPage(0);
   }
 
@@ -79,19 +95,16 @@ export class Category implements OnInit {
     type: '',
     parent: '',
     global: ''
-  }
+  };
 
-  category: {name: string; type: CategoryTypeCode | null; parentId: Id | null} = {
+  category: { name: string; type: CategoryTypeCode | null; parentId: Id | null } = {
     name: '',
     type: null,
     parentId: null
-  }
+  };
 
   rows: Row[] = [];
-  groups: Array<{parentId: Id | null; parentLabel: string; items: Row[]}> = [];
-
-  trackByGroup = (_: number, g: {parentId: Id | null }) => (g.parentId ?? 'root');
-  trackByCat = (_: number, r: Row) => r.id;
+  groups: Array<{ parentId: Id | null; parentLabel: string; items: Row[] }> = [];
 
   constructor(public common: Common, private api: Api, private snack: MatSnackBar) {}
 
@@ -101,12 +114,21 @@ export class Category implements OnInit {
 
   ngOnInit(): void {
     this.api.getCategoryTypes().subscribe({
-      next: (types) => this.categoryTypeOptions = (types ?? []) as CategoryTypeCode[],
-      error: () => this.categoryTypeOptions = []
+      next: (types) => (this.categoryTypeOptions = (types ?? []) as CategoryTypeCode[]),
+      error: () => (this.categoryTypeOptions = [])
     });
 
-    this.loadParentOptions();
+    this.loadParentOptionsForm();
+    this.loadParentOptionsGrid();
     this.loadCategories();
+  }
+
+  private mapParentOptions(list: ParentCategoryDto[]): Option[] {
+    return (list ?? []).map(c => ({
+      id: c.id,
+      label: c.displayName || c.name,
+      type: c.type
+    }));
   }
 
   private loadCategories(): void {
@@ -115,6 +137,7 @@ export class Category implements OnInit {
         this.rows = (list ?? []).map(c => ({
           ...c,
           editName: c.name,
+          editParentId: c.parentId,
           saving: false
         }));
         this.buildGroups();
@@ -129,13 +152,16 @@ export class Category implements OnInit {
 
   private buildGroups(): void {
     const map = new Map<Id | null, Row[]>();
+
     for (const r of this.rows) {
-      const k = (r.parentId ?? null);
-      if(!map.has(k)) map.set(k, []);
+      const k = r.parentId ?? null;
+      if (!map.has(k)) {
+        map.set(k, []);
+      }
       map.get(k)!.push(r);
     }
 
-    for(const [, arr] of map) {
+    for (const [, arr] of map) {
       arr.sort((a, b) => a.name.localeCompare(b.name));
     }
 
@@ -149,89 +175,52 @@ export class Category implements OnInit {
   }
 
   private parentLabelOf(parentId: Id | null): string {
-    if(parentId == null) return 'Parents';
+    if (parentId == null) return 'Parents';
 
     const cat = this.rows.find(r => r.id === parentId);
     if (cat) return cat.name;
 
-    const p = this.parentOptions.find(o => o.id === parentId);
-    if(p) return p.label;
+    const p = this.parentOptionsGrid.find(o => o.id === parentId);
+    if (p) return p.label;
 
     return `Parent ${String(parentId)}`;
   }
 
-  saveName(row: Row): void {
-    const next = row.editName?.trim() ?? '';
-    if(!next || next.length < 2 || next.toLocaleLowerCase() === row.name.toLocaleLowerCase()) return;
-
-    row.saving = true;
-    this.api.updateCategory(row.id, { name: next, parentId: row.parentId }).subscribe({
-      next: (updated) => {
-        row.name = updated.name;
-        row.editName = updated.name;
-        row.parentId = updated.parentId;
-        
-        row.saving = false;
-        this.snack.open('Nom mis à jour ✅', '✖', {
-          duration: 3000,
-          horizontalPosition: 'right',
-          verticalPosition: 'top',
-          panelClass: ['custom-toast']
-        });
-
-        this.buildGroups();
-        this.loadParentOptions(this.category.type);
-      },
-      error: (err) => {
-        row.saving = false;
-        this.errors.global = err?.error?.message || 'Erreur lors de la mise à jour du nom';
-      }
-    });
-  }
-
-  toggleStatus(row: Row): void {
-    row.saving = true;
-    this.api.toggleCategoryStatus(row.id).subscribe({
-      next: (updated) => {
-        row.status = updated.status;
-        row.saving = false;
-        this.snack.open(
-          updated.status === 1 ? 'Catégorie activée ✅' : 'Catégorie désactivée ✅',
-          '✖',
-          { duration: 3000, horizontalPosition: 'right', verticalPosition: 'top', panelClass: ['custom-toast'] }
-        );
-      },
-      error: (err) => {
-        row.saving = false;
-        this.errors.global = err?.error?.message || 'Erreur lors du changement de statut';
-      }
-    });
-  }
-
-  private loadParentOptions(type?: CategoryTypeCode | null): void {
+  private loadParentOptionsForm(type?: CategoryTypeCode | null): void {
     this.loadingParents = true;
     this.parentsErr = '';
 
     this.api.getCategoryParents(type ?? undefined).subscribe({
       next: (list: ParentCategoryDto[]) => {
-        this.parentOptions = (list ?? []).map(c => ({
-          id: c.id,
-          label: c.displayName || c.name,
-          type: c.type
-        }));
+        this.parentOptionsForm = this.mapParentOptions(list);
 
-        if(this.category.parentId && !this.parentOptions.some(o => o.id === this.category.parentId)) {
+        if (
+          this.category.parentId &&
+          !this.parentOptionsForm.some(o => o.id === this.category.parentId)
+        ) {
           this.category.parentId = null;
           this.selectedParentId = null;
         }
+
         this.loadingParents = false;
       },
       error: (e) => {
         this.parentsErr = e?.error?.message || 'Erreur de chargement des catégories parent.';
-        this.parentOptions = [];
+        this.parentOptionsForm = [];
         this.category.parentId = null;
         this.selectedParentId = null;
         this.loadingParents = false;
+      }
+    });
+  }
+
+  private loadParentOptionsGrid(): void {
+    this.api.getCategoryParents().subscribe({
+      next: (list: ParentCategoryDto[]) => {
+        this.parentOptionsGrid = this.mapParentOptions(list);
+      },
+      error: () => {
+        this.parentOptionsGrid = [];
       }
     });
   }
@@ -240,7 +229,7 @@ export class Category implements OnInit {
     this.category.type = type;
     this.category.parentId = null;
     this.selectedParentId = null;
-    this.loadParentOptions(type);
+    this.loadParentOptionsForm(type);
   }
 
   onParentSelected(id: Id | null): void {
@@ -249,8 +238,88 @@ export class Category implements OnInit {
   }
 
   labelOf(code: string): string {
-    if(!code) return '';
-    return CATEGORY_TYPE_LABELS[code] ?? code;
+    if (!code) return '';
+
+    const normalized = code.trim().toUpperCase();
+
+    if (normalized === 'DEPENSE') return 'Dépense';
+    if (normalized === 'REVENU') return 'Revenu';
+    if (normalized === 'LES_2') return 'Les 2';
+
+    return code;
+  }
+
+  isLesDeux(type: string | null | undefined): boolean {
+    if (!type) return false;
+    const normalized = type.toString().trim().toUpperCase();
+    return normalized === 'LES_2';
+  }
+
+  saveName(row: Row): void {
+    const next = row.editName?.trim() ?? '';
+    const nextParentId = row.editParentId ?? null;
+
+    if (
+      !next ||
+      next.length < 2 ||
+      (next.toLocaleLowerCase() === row.name.toLocaleLowerCase() &&
+        nextParentId === row.parentId)
+    ) {
+      return;
+    }
+
+    row.saving = true;
+    this.errors.global = '';
+
+    this.api.updateCategory(row.id, { name: next, parentId: nextParentId }).subscribe({
+      next: (updated) => {
+        row.name = updated.name;
+        row.parentId = updated.parentId;
+        row.editName = updated.name;
+        row.editParentId = updated.parentId;
+        row.saving = false;
+
+        this.snack.open('Catégorie mise à jour ✅', '✖', {
+          duration: 3000,
+          horizontalPosition: 'right',
+          verticalPosition: 'top',
+          panelClass: ['custom-toast']
+        });
+
+        this.loadCategories();
+        this.loadParentOptionsForm(this.category.type);
+        this.loadParentOptionsGrid();
+      },
+      error: (err) => {
+        row.saving = false;
+        this.errors.global = err?.error?.message || 'Erreur lors de la mise à jour de la catégorie';
+      }
+    });
+  }
+
+  toggleStatus(row: Row): void {
+    row.saving = true;
+
+    this.api.toggleCategoryStatus(row.id).subscribe({
+      next: (updated) => {
+        row.status = updated.status;
+        row.saving = false;
+        this.snack.open(
+          updated.status === 1 ? 'Catégorie activée ✅' : 'Catégorie désactivée ✅',
+          '✖',
+          {
+            duration: 3000,
+            horizontalPosition: 'right',
+            verticalPosition: 'top',
+            panelClass: ['custom-toast']
+          }
+        );
+      },
+      error: (err) => {
+        row.saving = false;
+        this.errors.global = err?.error?.message || 'Erreur lors du changement de statut';
+      }
+    });
   }
 
   async onSubmit(form: NgForm): Promise<void> {
@@ -281,49 +350,67 @@ export class Category implements OnInit {
 
     const payload = {
       name,
-      type,
+      type: type || undefined,
       parentId: parentId ?? undefined
     } satisfies import('../../services/api').CreateCategoryRequest;
 
     this.isSubmitting = true;
 
     this.api
-    .createCategory(payload)
-    .pipe(finalize(() => (this.isSubmitting = false)))
-    .subscribe({
-      next: (createdCategory) => {
-        this.snack.open('Catégorie créée ✅', '✖', {
-          duration: 3000,
-          horizontalPosition: 'right',
-          verticalPosition: 'top',
-          panelClass: ['custom-toast']
-        });
-
-        if (parentId && type == 'DEPENSE') {
-          const budgetPayload = {
-            category: createdCategory.id,
-            amount: '0',
-            type: 'LBP',
-            frequency: 1
-          } satisfies import('../../services/api').GestionBudgetRequest;
-
-          this.api.createBudgetManagement(budgetPayload).subscribe({
-            next: () => console.log('Budget management créé (catégorie parente)'),
-            error: (err) => {
-              console.error('Erreur createBudgetManagement', err);
-              this.snack.open('⚠️ Budget non créé automatiquement', '✖', { duration: 3000, horizontalPosition: 'right', verticalPosition: 'top', panelClass: ['custom-toast'] });
-            }
+      .createCategory(payload)
+      .pipe(finalize(() => (this.isSubmitting = false)))
+      .subscribe({
+        next: (createdCategory) => {
+          this.snack.open('Catégorie créée ✅', '✖', {
+            duration: 3000,
+            horizontalPosition: 'right',
+            verticalPosition: 'top',
+            panelClass: ['custom-toast']
           });
-        }
 
-        form.reset({ name: '', type: null, parentId: null });
-        this.loadCategories();
-        this.loadParentOptions(this.category.type);
-      },
-      error: (err) => {
-        this.errors.global = err?.error?.message || 'Erreur lors de la création de la catégorie';
-      }
-    });
+          if (parentId && type === 'DEPENSE') {
+            const budgetPayload = {
+              category: createdCategory.id,
+              amount: '0',
+              type: 'LBP',
+              frequency: 1
+            } satisfies import('../../services/api').GestionBudgetRequest;
+
+            this.api.createBudgetManagement(budgetPayload).subscribe({
+              next: () => console.log('Budget management créé (catégorie parente)'),
+              error: (err) => {
+                console.error('Erreur createBudgetManagement', err);
+                this.snack.open('⚠️ Budget non créé automatiquement', '✖', {
+                  duration: 3000,
+                  horizontalPosition: 'right',
+                  verticalPosition: 'top',
+                  panelClass: ['custom-toast']
+                });
+              }
+            });
+          }
+
+          form.resetForm({
+            name: '',
+            type: null,
+            parentId: null
+          });
+
+          this.category = {
+            name: '',
+            type: null,
+            parentId: null
+          };
+
+          this.selectedParentId = null;
+
+          this.loadCategories();
+          this.loadParentOptionsForm();
+          this.loadParentOptionsGrid();
+        },
+        error: (err) => {
+          this.errors.global = err?.error?.message || 'Erreur lors de la création de la catégorie';
+        }
+      });
   }
-  
 }

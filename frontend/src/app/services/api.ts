@@ -42,7 +42,7 @@ import { Observable, map } from 'rxjs';
 
   export interface CreateCategoryRequest {
     name: string;
-    type: string;
+    type: string | undefined;
     parentId?: Id | null;
   }
 
