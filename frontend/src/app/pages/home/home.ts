@@ -125,7 +125,6 @@ export class Home implements OnInit {
     this.api.getExpDiffUp().subscribe({
       next: (rows: ExpDiff[]) => {
         this.expDiffUp = rows ?? [];
-        console.log(this.expDiffUp);
       },
       error: (err) => {
         console.error('Erreur getExpDiff():', err);
@@ -240,7 +239,6 @@ export class Home implements OnInit {
     this.loadingPSV = true;
     this.api.getPSV().subscribe({
       next: (rows) => {
-        console.log(rows);
         this.psv = (rows ?? [])
           .map(r => ({
             parentId: Number((r as any).parentId ?? (r as any).parent_id ?? 0),
@@ -321,7 +319,6 @@ export class Home implements OnInit {
     this.loadingChildren.add(parentId);
     this.api.getCPV(parentId).subscribe({
       next: (rows) => {
-        console.log(rows);
         const list: CPV[] = (rows ?? []).map(r => ({
           childId: Number((r as any).childId ?? (r as any).child_id ?? 0),
           name: String(r.name),

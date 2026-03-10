@@ -70,31 +70,53 @@
       </div>
     }
 
-    @for(p of psv; track p.parentId){
+    @for(p of psv; track (p.parentId + '-' + p.name)){
       <div class="parent-row">
-        <button class="parent-line" type="button" (click)="onToggleParent(p)" [attr.aria-expanded]="isExpanded(p.name)">
+        <button
+          class="parent-line"
+          type="button"
+          (click)="onToggleParent(p)"
+          [attr.aria-expanded]="isExpanded(p.name)"
+        >
           <span class="chevron" [class.open]="isExpanded(p.name)"></span>
-          @if(p.count > 0 && p.total < 100){
-            <span class="parent-name">{{ p.name }}</span>
-            <div class="bar-container">
-              <div class="bar">
-                <div class="fill" [style.width.%]="p.total" [style.background]="barColor(p.total)"></div>
+
+          <div class="parent-content">
+            @if(p.count > 0 && p.total < 100){
+              <span class="parent-name">{{ p.name }}</span>
+
+              <div class="bar-container">
+                <div class="bar">
+                  <div
+                    class="fill"
+                    [style.width.%]="p.total"
+                    [style.background]="barColor(p.total)"
+                  ></div>
+                </div>
+                <span class="parent-value">
+                  {{ p.total }}% ({{p.transactions}} LBP/{{p.budget}} LBP)
+                </span>
               </div>
-              <span class="parent-value">{{ p.total }}% ({{p.transactions}} LBP/{{p.budget}} LBP)</span>
-            </div>
-          }
-          @else if(p.count > 0 && p.total == 100){
-            <span class="parent-name">{{ p.name }}</span>
-            <div class="bar-container">
-              <div class="bar">
-                <div class="fill" [style.width.%]="p.total" [style.background]="barColor(p.total)"></div>
+            }
+            @else if(p.count > 0 && p.total == 100){
+              <span class="parent-name">{{ p.name }}</span>
+
+              <div class="bar-container">
+                <div class="bar">
+                  <div
+                    class="fill"
+                    [style.width.%]="p.total"
+                    [style.background]="barColor(p.total)"
+                  ></div>
+                </div>
+                <span class="parent-value">
+                  {{ p.total }}% ({{p.budget}} LBP)
+                </span>
               </div>
-              <span class="parent-value">{{ p.total }}% ({{p.budget}} LBP)</span>
-            </div>
-          }
-          @else {
-            <span class="parent-name">{{ p.name }} ({{p.transactions}} LBP)</span>
-          }
+            }
+            @else {
+              <span class="parent-name">{{ p.name }} ({{p.transactions}} LBP)</span>
+            }
+          </div>
         </button>
 
         <div class="collapse-body" [class.open]="isExpanded(p.name)">
@@ -106,17 +128,24 @@
             <div class="hint">Aucun enfant ce mois-ci.</div>
           }
 
-          @for(ch of (childrenMap.get(p.parentId) || []); track ch.childId){
+          @for(ch of (childrenMap.get(p.parentId) || []); track ($index + '-' + ch.childId + '-' + ch.name)){
             <div class="child-row">
-                @if(ch.amount == 0) {
-                  <span class="parent-value">{{ ch.name }}: {{ch.total}} LBP</span>
-                }
-                @else {
+              @if(ch.amount == 0) {
+                <span class="parent-value">{{ ch.name }}: {{ch.total}} LBP</span>
+              }
+              @else {
+                <div class="child-content">
                   <span class="parent-name">{{ ch.name }}</span>
+
                   <div class="bar-container">
                     <div class="bar">
-                      <div class="fill" [style.width.%]="ch.percent" [style.background]="barColor(ch.percent)"></div>
+                      <div
+                        class="fill"
+                        [style.width.%]="ch.percent"
+                        [style.background]="barColor(ch.percent)"
+                      ></div>
                     </div>
+
                     @if(ch.percent >= 100){
                       <span class="parent-value">{{ ch.percent }}% ({{ch.total}} LBP)</span>
                     }
@@ -124,7 +153,8 @@
                       <span class="parent-value">{{ ch.percent }}% ({{ch.total}} LBP/{{ch.budget}} LBP)</span>
                     }
                   </div>
-                }
+                </div>
+              }
             </div>
           }
         </div>
@@ -146,8 +176,8 @@
           {{sum - epargne}} LBP
         }
       </div>
-      <div class="bar">
-        <div class="fill" [style.width.%]="sumPercent" [style.background]="barColorReverse(sumPercent)"></div>
+      <div class="saving-bar">
+        <div class="saving-fill" [style.width.%]="sumPercent" [style.background]="barColorReverse(sumPercent)"></div>
       </div>
     </div>
   </div>
