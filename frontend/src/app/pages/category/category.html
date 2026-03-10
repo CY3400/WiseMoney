@@ -139,7 +139,9 @@
                 <label>
                     Par page
                     <select [ngModel]="pageSize" (ngModelChange)="setPageSize($event)">
-                        <option *ngFor="let s of pageSizes" [ngValue]="s">{{ s }}</option>
+                        @for(s of pageSizes; track s){
+                            <option [ngValue]="s">{{ s }}</option>
+                        }
                     </select>
                 </label>
 
