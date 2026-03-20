@@ -1,53 +1,456 @@
-.main div {
-    text-align: start;
+.gestion-budget-page {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
 }
+
+.page-header h1 {
+    margin: 0 0 8px;
+    color: #1F4E95;
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.page-header p {
+    margin: 0;
+    color: #72839A;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.table-card {
+    background-color: #F8FAFC;
+    border: 1px solid #D9E4F0;
+    box-shadow: 0 16px 36px rgba(184, 201, 217, 0.2);
+    border-radius: 24px;
+    padding: 28px 24px;
+}
+
+.card-header {
+    margin-bottom: 22px;
+}
+
+.card-header h2 {
+    margin: 0 0 8px;
+    color: #1F4E95;
+    font-size: 1.55rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.card-header p {
+    margin: 0;
+    color: #72839A;
+    font-size: 0.98rem;
+    line-height: 1.5;
+}
+
+label {
+    color: #233C9A;
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 10px;
+}
+
+input,
+select {
+    width: 100%;
+    background-color: #FFFFFF;
+    border: 1px solid #C3D1E0;
+    border-radius: 10px;
+    padding: 13px 14px;
+    font-size: 0.95rem;
+    color: #1F2A44;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input:focus,
+select:focus {
+    border-color: #2F6FED;
+    box-shadow: 0 0 0 3px rgba(47, 111, 237, 0.12);
+}
+
+button {
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    font-weight: 700;
+    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+}
+
+.secondary {
+    padding: 14px 24px;
+    min-width: 150px;
+    color: #FFFFFF;
+    background-color: #2EC4B6;
+}
+
+.secondary:hover {
+    background-color: #24A89C;
+}
+
+.small-btn {
+    min-width: 100px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 0.92rem;
+    white-space: nowrap;
+}
+
+.desktop-table {
+    display: block;
+}
+
+.mobile-cards {
+    display: none;
+}
+
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid #E4ECF5;
+    border-radius: 18px;
+    background: #FFFFFF;
+    position: relative;
+}
+
+.table-wrapper::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 24px;
+    height: 100%;
+    pointer-events: none;
+    background: linear-gradient(to left, rgba(248, 250, 252, 0.95), rgba(248, 250, 252, 0));
+}
+
+.categories-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1080px;
+}
+
+.categories-table thead th {
+    background: #EEF5FB;
+    color: #1F4E95;
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-align: left;
+    padding: 16px 14px;
+    border-bottom: 1px solid #D9E4F0;
+}
+
+.categories-table tbody td {
+    padding: 14px;
+    border-bottom: 1px solid #E8EDF5;
+    vertical-align: top;
+    color: #1F2A44;
+}
+
+.group-row td {
+    background: #F4F8FC;
+    color: #1F4E95;
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 14px;
+}
+
+.table-input {
+    min-width: 0;
+}
+
+.actions-cell {
+    min-width: 150px;
+}
+
+.field-error {
+    margin-top: 8px;
+    color: #D14343;
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.empty-state {
+    text-align: center;
+    color: #72839A;
+    padding: 28px 16px !important;
+    font-weight: 600;
+}
+
+.cat {
+    font-weight: 600;
+    color: #1F2A44;
+}
+
+.pager {
+    margin-top: 18px;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.pager-left,
+.pager-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.pager-left label {
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pager-left select {
+    width: auto;
+    min-width: 70px;
+    padding: 8px 10px;
+}
+
+.pager-left span,
+.pager-right span {
+    color: #72839A;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.ghost-btn {
+    min-width: 42px;
+    height: 42px;
+    padding: 0 12px;
+    border-radius: 12px;
+    background: #EEF5FB;
+    color: #1F4E95;
+}
+
+.ghost-btn:hover {
+    background: #E3EEF9;
+}
+
+.mobile-group {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.mobile-group-title {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #1F4E95;
+    background: #EEF4FB;
+    border: 1px solid #D9E4F0;
+    border-radius: 14px;
+    padding: 12px 14px;
+}
+
+.mobile-card {
+    background: #FFFFFF;
+    border: 1px solid #D9E4F0;
+    border-radius: 18px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-shadow: 0 8px 20px rgba(184, 201, 217, 0.12);
+}
+
+.mobile-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.mobile-field label {
+    font-weight: 700;
+    color: #233C9A;
+    font-size: 0.95rem;
+    margin-bottom: 0;
+}
+
+.mobile-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.mobile-actions button {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: 12px 14px;
+    font-size: 0.92rem;
+}
+
+.mobile-pager {
+    margin-top: 14px;
+}
+
+.mobile-empty {
+    text-align: center;
+    padding: 20px;
+    border: 1px solid #D9E4F0;
+    border-radius: 16px;
+    background: #FFFFFF;
+}
+
+input:disabled,
+select:disabled,
+button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+@media (min-width: 993px) and (max-width: 1150px) {
+    .categories-table {
+        min-width: 980px;
+    }
+
+    .small-btn {
+        min-width: 88px;
+        padding: 10px 12px;
+        font-size: 0.88rem;
+    }
+
+    .actions-cell {
+        min-width: 125px;
+    }
+}
+
 @media (max-width: 992px) {
-    .main, .error {
-        width: 70%;
+    .desktop-table {
+        display: none;
+    }
+
+    .mobile-cards {
+        display: block;
     }
 }
 
 @media (max-width: 768px) {
-    .main, .error {
-        width: 90%;
+    .gestion-budget-page {
+        padding: 16px;
+        gap: 18px;
+    }
+
+    .table-card {
+        padding: 22px 18px;
+        border-radius: 20px;
+    }
+
+    .card-header h2 {
+        font-size: 1.4rem;
     }
 }
 
 @media (max-width: 576px) {
-    .main, .error {
-        width: 100%;
+    .page-header h1 {
+        font-size: 1.65rem;
     }
 
-    .main {
-        height: 80%;
+    .page-header p {
+        font-size: 0.92rem;
+        line-height: 1.45;
+        max-width: 95%;
     }
 
-    .sub-main {
+    .card-header p {
+        font-size: 0.95rem;
+    }
+
+    .pager,
+    .mobile-pager {
         flex-direction: column;
+        align-items: stretch;
     }
 
-    .sub-main div {
-        width: 70%;
-    }
-}
-
-@media (max-width: 360px) {
-    .sub-main div {
+    .pager-left,
+    .pager-right,
+    .mobile-pager .pager-left,
+    .mobile-pager .pager-right {
         width: 100%;
+        justify-content: space-between;
     }
 
-    .main, .error {
-        border: none;
-    }
-}
-
-@media (min-width: 1200px) {
-    .main, .error {
-        width: 50%;
+    .mobile-card {
+        padding: 14px;
+        border-radius: 18px;
     }
 }
 
-.cat {
-    padding: 24px 0px;
-    font-size: 18px;
+@media (max-width: 400px) {
+    .gestion-budget-page {
+        padding: 14px;
+    }
+
+    .table-card {
+        padding: 18px 14px;
+    }
+
+    .pager-left,
+    .pager-right,
+    .mobile-pager .pager-left,
+    .mobile-pager .pager-right {
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .mobile-pager .pager-right {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-top: 2px;
+    }
+
+    .mobile-pager .pager-right span {
+        width: 100%;
+        text-align: center;
+        order: -1;
+        margin-bottom: 0;
+    }
+
+    .mobile-pager .pager-left {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 4px;
+        row-gap: 6px;
+    }
+
+    .pager-left span,
+    .pager-right span,
+    .mobile-pager .pager-right span,
+    .mobile-pager .pager-left span {
+        font-size: 0.9rem;
+    }
+
+    .ghost-btn {
+        min-width: 38px;
+        height: 38px;
+        padding: 0 10px;
+    }
 }

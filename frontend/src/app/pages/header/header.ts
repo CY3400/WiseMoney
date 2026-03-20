@@ -41,7 +41,7 @@ export class Header {
 
   @HostListener('window:resize')
   onResize(){
-    const DESKTOP_BP = 992;
+    const DESKTOP_BP = 1200;
     if(window.innerWidth >= DESKTOP_BP){
       this.closeMenu(false);
     }

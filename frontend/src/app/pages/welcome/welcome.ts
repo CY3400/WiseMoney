@@ -5,7 +5,7 @@ import { Common } from '../../services/common';
 @Component({
   selector: 'app-welcome',
   templateUrl: './welcome.html',
-  styleUrls: ['./welcome.css','../../../styles.css'],
+  styleUrls: ['./welcome.css'],
   standalone: true
 })
 export class Welcome implements OnInit {
@@ -13,7 +13,7 @@ export class Welcome implements OnInit {
 
   ngOnInit(): void {
     this.api.logout().subscribe({
-      next: () => console.log('Déconnexion réussie'),
+      next: () => {},
       error: (err) => console.error('Erreur lors du logout :', err)
     });
   }

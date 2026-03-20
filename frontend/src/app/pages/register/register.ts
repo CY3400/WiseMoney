@@ -12,7 +12,7 @@ import { finalize } from 'rxjs';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './register.html',
-  styleUrls: ['./register.css','../../../styles.css']
+  styleUrls: ['./register.css']
 })
 export class Register {
   protected allowedKeys = Validators.allowedKeys;

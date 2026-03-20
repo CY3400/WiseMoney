@@ -1,184 +1,236 @@
 @if(user){
-  <div class="top-left">
-    <h2>Bienvenue {{ user.firstName }} {{ user.lastName }}</h2>
-  </div>
+  <section class="welcome-row">
+    <div class="welcome-text">
+      <h1>Bienvenue {{ user.firstName }} {{ user.lastName }}</h1>
+      <p>Voici un aperçu de vos finances du mois</p>
+    </div>
+  </section>
 }
 
-<div class="home">
-  <div class="left-column">
-    <div class="main panorama">
-      <h2>Panorama Financier</h2>
-      <div class="section-title">Budget de Départ Mensuel: {{budget}} LBP</div>
-      <div class="section-title">Somme des Revenus Mensuels: {{sumRev}} LBP</div>
-      <div class="section-title">Somme des Dépenses Mensuelles: {{sumDep}} LBP</div>
-      <div class="section-title">Somme des Dépenses Mensuelles Prévues: {{sumDepF}} LBP</div>
-      <div class="section-title">Budget Final Présumé: {{epargne}} LBP</div>
-      <div class="section-title">Moyenne de Dépenses Quotidienne Conseillée: {{average < 0 ? 0 : average}} LBP</div>
+<section class="kpi-row">
+  <div class="kpi-card">
+    <div class="kpi-content">
+      <span class="kpi-label">Budget de Départ</span>
+      <strong class="kpi-value">{{budget}} LBP</strong>
     </div>
-
-    @if(expDiff.length > 0 || expDiffUp.length > 0) {
-      <div class="main diff">
-        <h2>Changements Marquants des Dépenses</h2>
-        @if(expDiff.length > 0) {
-          <div class="section-title">
-            Réduction notable des dépenses:
-            <ul>
-              @for(e of expDiff; track e.name){
-                <li>{{e.name}}: {{e.total}}%</li>
-              }
-            </ul>
-          </div>
-        }
-
-        @if(expDiffUp.length > 0) {
-          <div class="section-title">
-            Augmentation significative des dépenses
-            <ul>
-              @for(e of expDiffUp; track e.name){
-                @if(e.old != '1'){
-                  <li>{{e.name}}: {{e.total}}%</li>
-                }
-                @else {
-                  <li>{{e.name}}: Nouveau</li>
-                }
-              }
-            </ul>
-          </div>
-        }
-      </div>
-    }
   </div>
-  
-  <div class="main center">
-    <span class="section-title">Budget dépensé ce mois-ci</span>
-    <div class="circular-progress" [style.background]="conicBackground">
-      <div class="value-container" [style.color]="progressColor">
-        {{percent}}%
-      </div>
-      <div class="inner-ring"></div>
+
+  <div class="kpi-card">
+    <div class="kpi-content">
+      <span class="kpi-label">Revenus du Mois</span>
+      <strong class="kpi-value">{{sumRev}} LBP</strong>
     </div>
+  </div>
 
-    <div class="section-title">Dépenses par catégorie</div>
+  <div class="kpi-card">
+    <div class="kpi-content">
+      <span class="kpi-label">Dépenses du Mois</span>
+      <strong class="kpi-value">{{sumDep}} LBP</strong>
+    </div>
+  </div>
 
-    @if(loadingPSV){
-      <div class="hint">Chargement...</div>
-    }
-    
-    @if(!loadingPSV && psv.length === 0){
-      <div class="hint">
-        Aucune dépense ce mois-ci.
-      </div>
-    }
+  <div class="kpi-card">
+    <div class="kpi-content">
+      <span class="kpi-label">Dépenses Prévues</span>
+      <strong class="kpi-value">{{sumDepF}} LBP</strong>
+    </div>
+  </div>
 
-    @for(p of psv; track (p.parentId + '-' + p.name)){
-      <div class="parent-row">
-        <button
-          class="parent-line"
-          type="button"
-          (click)="onToggleParent(p)"
-          [attr.aria-expanded]="isExpanded(p.name)"
-        >
-          <span class="chevron" [class.open]="isExpanded(p.name)"></span>
+  <div class="kpi-card">
+    <div class="kpi-content">
+      <span class="kpi-label">Dépense Quotidienne Conseillée</span>
+      <strong class="kpi-value">{{average < 0 ? 0 : average}} LBP</strong>
+    </div>
+  </div>
+</section>
 
-          <div class="parent-content">
-            @if(p.count > 0 && p.total < 100){
-              <span class="parent-name">{{ p.name }}</span>
-
-              <div class="bar-container">
-                <div class="bar">
-                  <div
-                    class="fill"
-                    [style.width.%]="p.total"
-                    [style.background]="barColor(p.total)"
-                  ></div>
-                </div>
-                <span class="parent-value">
-                  {{ p.total }}% ({{p.transactions}} LBP/{{p.budget}} LBP)
-                </span>
-              </div>
-            }
-            @else if(p.count > 0 && p.total == 100){
-              <span class="parent-name">{{ p.name }}</span>
-
-              <div class="bar-container">
-                <div class="bar">
-                  <div
-                    class="fill"
-                    [style.width.%]="p.total"
-                    [style.background]="barColor(p.total)"
-                  ></div>
-                </div>
-                <span class="parent-value">
-                  {{ p.total }}% ({{p.budget}} LBP)
-                </span>
-              </div>
-            }
-            @else {
-              <span class="parent-name">{{ p.name }} ({{p.transactions}} LBP)</span>
-            }
+<section class="analytics-row">
+  <div class="analytics-card budget-card">
+    <h2 class="card-title">Budget dépensé ce mois-ci</h2>
+    <div class="budget-layout">
+      <div class="budget-chart-block">
+        <div class="circular-progress" [style.background]="conicBackground">
+          <div class="value-container" [style.color]="progressColor">
+            {{percent}}%
           </div>
-        </button>
+          <div class="inner-ring"></div>
+        </div>
+      </div>
 
-        <div class="collapse-body" [class.open]="isExpanded(p.name)">
-          @if(loadingChildren.has(p.parentId)){
-            <div class="hint">Chargement...</div>
-          }
+      <div class="budget-details-block">
+        <div class="section-title">Dépenses par catégorie</div>
 
-          @if(!loadingChildren.has(p.parentId) && (childrenMap.get(p.parentId)?.length || 0) === 0){
-            <div class="hint">Aucun enfant ce mois-ci.</div>
-          }
+        @if(loadingPSV){
+          <div class="hint">Chargement...</div>
+        }
+        
+        @if(!loadingPSV && psv.length === 0){
+          <div class="hint">Aucune dépense ce mois-ci.</div>
+        }
 
-          @for(ch of (childrenMap.get(p.parentId) || []); track ($index + '-' + ch.childId + '-' + ch.name)){
-            <div class="child-row">
-              @if(ch.amount == 0) {
-                <span class="parent-value">{{ ch.name }}: {{ch.total}} LBP</span>
-              }
-              @else {
-                <div class="child-content">
-                  <span class="parent-name">{{ ch.name }}</span>
+        @for(p of psv; track (p.parentId + '-' + p.name)){
+          <div class="parent-row">
+            <button
+              class="parent-line"
+              type="button"
+              (click)="onToggleParent(p)"
+              [attr.aria-expanded]="isExpanded(p.name)"
+            >
+              <span class="chevron" [class.open]="isExpanded(p.name)"></span>
+
+              <div class="parent-content">
+                @if(p.count > 0 && p.total < 100){
+                  <span class="parent-name">{{ p.name }}</span>
 
                   <div class="bar-container">
                     <div class="bar">
                       <div
                         class="fill"
-                        [style.width.%]="ch.percent"
-                        [style.background]="barColor(ch.percent)"
+                        [style.width.%]="p.total"
+                        [style.background]="barColor(p.total)"
                       ></div>
                     </div>
-
-                    @if(ch.percent >= 100){
-                      <span class="parent-value">{{ ch.percent }}% ({{ch.total}} LBP)</span>
-                    }
-                    @else {
-                      <span class="parent-value">{{ ch.percent }}% ({{ch.total}} LBP/{{ch.budget}} LBP)</span>
-                    }
+                    <span class="parent-value">
+                      {{ p.total }}% ({{p.transactions}} LBP/{{p.budget}} LBP)
+                    </span>
                   </div>
+                }
+                @else if(p.count > 0 && p.total == 100){
+                  <span class="parent-name">{{ p.name }}</span>
+
+                  <div class="bar-container">
+                    <div class="bar">
+                      <div
+                        class="fill"
+                        [style.width.%]="p.total"
+                        [style.background]="barColor(p.total)"
+                      ></div>
+                    </div>
+                    <span class="parent-value">
+                      {{ p.total }}% ({{p.budget}} LBP)
+                    </span>
+                  </div>
+                }
+                @else {
+                  <span class="parent-name">{{ p.name }} ({{p.transactions}} LBP)</span>
+                }
+              </div>
+            </button>
+
+            <div class="collapse-body" [class.open]="isExpanded(p.name)">
+              @if(loadingChildren.has(p.parentId)){
+                <div class="hint">Chargement...</div>
+              }
+
+              @if(!loadingChildren.has(p.parentId) && (childrenMap.get(p.parentId)?.length || 0) === 0){
+                <div class="hint">Aucun enfant ce mois-ci.</div>
+              }
+
+              @for(ch of (childrenMap.get(p.parentId) || []); track ($index + '-' + ch.childId + '-' + ch.name)){
+                <div class="child-row">
+                  @if(ch.amount == 0) {
+                    <span class="parent-value">{{ ch.name }}: {{ch.total}} LBP</span>
+                  }
+                  @else {
+                    <div class="child-content">
+                      <span class="parent-name">{{ ch.name }}</span>
+
+                      <div class="bar-container">
+                        <div class="bar">
+                          <div
+                            class="fill"
+                            [style.width.%]="ch.percent"
+                            [style.background]="barColor(ch.percent)"
+                          ></div>
+                        </div>
+
+                        @if(ch.percent >= 100){
+                          <span class="parent-value">{{ ch.percent }}% ({{ch.total}} LBP)</span>
+                        }
+                        @else {
+                          <span class="parent-value">{{ ch.percent }}% ({{ch.total}} LBP/{{ch.budget}} LBP)</span>
+                        }
+                      </div>
+                    </div>
+                  }
                 </div>
               }
             </div>
-          }
-        </div>
+          </div>
+        }
       </div>
-    }
+    </div>
   </div>
-  
-  <div class="right-column">
-    <div class="main objectif">
-      <h2>Objectif d'épargne</h2>
-      <div class="section-title">Epargne de Fin de Mois Présumé: {{epargne}} LBP</div>
-      <div class="section-title">Objectif à atteindre: {{sum}} LBP</div>
-      <div class="section-title">Pourcentage d'Epargne Atteint: {{sumPercent}}%</div>
-      <div class="section-title">Montant Restant:
+
+  <div class="analytics-card savings-card">
+    <h2 class="card-title">Objectif d'épargne</h2>
+
+    <div class="savings-stats">
+      <span class="stat-label">Epargne de Fin de Mois Présumée</span>
+      <strong class="stat-value">{{epargne}} LBP</strong>
+    </div>
+
+    <div class="savings-stats">
+      <span class="stat-label">Objectif à atteindre</span>
+      <strong class="stat-value">{{sum}} LBP</strong>
+    </div>
+
+    <div class="savings-stats">
+      <span class="stat-label">Pourcentage d'Epargne Atteint</span>
+      <strong class="stat-value">{{sumPercent}}%</strong>
+    </div>
+
+    <div class="savings-stats">
+      <span class="stat-label">Montant Restant</span>
+      <strong class="stat-value">
         @if(sum - epargne < 0) {
           0 LBP
         }
         @else {
           {{sum - epargne}} LBP
         }
-      </div>
-      <div class="saving-bar">
-        <div class="saving-fill" [style.width.%]="sumPercent" [style.background]="barColorReverse(sumPercent)"></div>
-      </div>
+      </strong>
+    </div>
+
+    <div class="saving-bar">
+      <div class="saving-fill" [style.width.%]="sumPercent" [style.background]="barColorReverse(sumPercent)"></div>
     </div>
   </div>
-</div>
+</section>
+
+<section class="insights-row">
+  @if(expDiff.length > 0) {
+    <div class="insight-card">
+      <h2 class="card-title">Réductions Notables</h2>
+      <div class="insight-list">
+        @for(e of expDiff; track e.name){
+          <div class="insight-item insight-down">
+            <span class="insight-name">{{e.name}}</span>
+            <span class="insight-value">{{e.total}}%</span>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  @if(expDiffUp.length > 0) {
+    <div class="insight-card">
+      <h2 class="card-title">Hausse des Dépenses</h2>
+
+      <div class="insight-list">
+        @for(e of expDiffUp; track e.name){
+          <div class="insight-item insight-up">
+            <span class="insight-name">{{e.name}}</span>
+
+            @if(e.old != '1'){
+              <span class="insight-value">{{e.total}}%</span>
+            }
+            @else {
+              <span class="insight-value">Nouveau</span>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+</section>

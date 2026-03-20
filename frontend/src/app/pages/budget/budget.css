@@ -1,3 +1,161 @@
-.main div {
-    text-align: start;
+.center-page {
+    min-height: calc(100dvh - var(--header-h));
+    display: grid;
+    place-items: center;
+    padding: 24px;
+}
+
+.error {
+    width: min(560px, 92%);
+    border-radius: 16px;
+    padding: 18px 22px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    justify-content: center;
+    background-color: #FBE4E6;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.budget-card {
+    background-color: #F8FAFC;
+    border: 1px solid #D9E4F0;
+    box-shadow: 0 16px 36px rgba(184, 201, 217, 0.2);
+    border-radius: 24px;
+    padding: 36px 32px;
+    width: min(600px, 92%);
+    min-width: 0;
+}
+
+.page-title {
+    margin: 0 0 8px;
+    color: #1F4E95;
+    font-size: clamp(1.8rem, 4vw, 2.2 rem);
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.page-subtitle {
+    margin: 0 0 24px;
+    color: #72839A;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.field-group {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+label {
+    color: #233C9A;
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 10px;
+}
+
+input {
+    width: 100%;
+    background-color: #FFFFFF;
+    border: 1px solid #C3D1E0;
+    border-radius: 10px;
+    padding: 13px 14px;
+    font-size: 0.95rem;
+    color: #1F2A44;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input:focus {
+    border-color: #2F6FED;
+    box-shadow: 0 0 0 3px rgba(47, 111, 237, 0.12);
+}
+
+input.border-danger {
+    border-color: #F05A5A;
+}
+
+input.border-danger:focus {
+    border-color: #F05A5A;
+    box-shadow: 0 0 0 3px rgba(240, 90, 90, 0.14);
+}
+
+input:disabled,
+button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.actions {
+    display: flex;
+    justify-content: flex-start;
+}
+
+button {
+    padding: 14px 26px;
+    font-weight: 700;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    min-width: 190px;
+    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+}
+
+.primary {
+    background-color: #2563D8;
+}
+
+.primary:hover {
+    background-color: #1E4FB0;
+}
+
+.secondary {
+    background-color: #2EC4B6;
+}
+
+.secondary:hover {
+    background-color: #24A89C;
+}
+
+@media (max-width: 576px) {
+    .center-page {
+        padding: 16px;
+    }
+
+    .budget-card {
+        padding: 28px 20px;
+        border-radius: 20px;
+    }
+
+    .page-title {
+        font-size: 1.7rem;
+    }
+
+    .page-subtitle {
+        font-size: 0.95rem;
+    }
+
+    .actions {
+        justify-content: stretch;
+    }
+
+    button {
+        width: 100%;
+        min-width: unset;
+    }
 }

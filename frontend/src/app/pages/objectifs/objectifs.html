@@ -1,6 +1,6 @@
-<div class="center-page">
+<div class="objectif-page">
     @if(hasErrors()){
-        <div class="error border-danger">
+        <div class="error-banner border-danger">
             @if(errors.global){
                 <span class="text-danger">{{ errors.global }}</span>
             }
@@ -10,71 +10,128 @@
         </div>
     }
 
-    <div class="main">
-        <h2>Objectifs</h2>
+    <section class="page-header">
+        <h1>Objectifs</h1>
         <p>Définissez vos objectifs d'épargne pour chaque mois (Les sommes sont cumulatives entre chaque mois)</p>
-        <table class="table categories">
-            <colgroup>
-                <col style="width: 33%">
-                <col style="width: 34%">
-                <col style="width: 33%">
-            </colgroup>
-            <thead>
-                <tr>
-                    <th>Mois/Année</th>
-                    <th>Objectif</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
+    </section>
 
-            @if(pagedRows.length){
-                <tbody>
-                    @for(r of pagedRows; track r.id){
+    <section class="table-card">
+        <div class="card-header">
+            <h2>Objectifs des différents mois</h2>
+            <p>Modifiez les objectifs chaque mois</p>
+        </div>
+
+        <div class="desktop-table">
+            <div class="table-wrapper">
+                <table class="objectives-table">
+                    <colgroup>
+                        <col style="width: 33%">
+                        <col style="width: 34%">
+                        <col style="width: 33%">
+                    </colgroup>
+
+                    <thead>
                         <tr>
-                            <td class="date">
-                                {{r.month}}/{{r.year}}
-                            </td>
-                            <td class="editName">
-                                <input type="text" [(ngModel)]="r.editObjectif" class="form-control" (keydown)="onKeyDownNumber($event)" (paste)="common.validateNextValuePaste($event,numberObjectifRegex)"/>
-                            </td>
-                            <td class="btns">
-                                <button class="secondary" type="button" (click)="modify(r)" [disabled]="r.saving || !r.editObjectif || !hasChanged(r)">Modifier</button>
-                            </td>
+                            <th>Mois/Année</th>
+                            <th>Objectif</th>
+                            <th>Actions</th>
                         </tr>
-                    }
-                </tbody>
-            }
-            @else {
-                <tbody>
-                    <tr>
-                        <td class="emptyState" colspan="3">
-                            Aucun objectif disponible
-                        </td>
-                    </tr>
-                </tbody>
-            }
-        </table>
+                    </thead>
 
-        <div class="pager">
-            <div class="left">
-                <label>
-                    Par page
-                    <select [ngModel]="pageSize" (ngModelChange)="setPageSize($event)">
-                        @for(s of pageSizes; track s){
-                            <option [ngValue]="s">{{ s }}</option>
-                        }
-                    </select>
-                </label>
-                <span>{{ pageIndex * pageSize + 1 }} – {{ Math.min((pageIndex + 1) * pageSize, total) }} sur {{ total }}</span>
+                    @if(pagedRows.length){
+                        <tbody>
+                            @for(r of pagedRows; track r.id){
+                                <tr>
+                                    <td>{{r.month}}/{{r.year}}</td>
+                                    <td>
+                                        <input id="editObjectif_{{r.id}}" type="text" [(ngModel)]="r.editObjectif" class="form-control table-input" (keydown)="onKeyDownNumber($event)" (paste)="common.validateNextValuePaste($event,numberObjectifRegex)"/>
+                                    </td>
+                                    <td class="actions-cell">
+                                        <button class="secondary small-btn" type="button" (click)="modify(r)" [disabled]="r.saving || !r.editObjectif || !hasChanged(r)">Modifier</button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    }
+                    @else {
+                        <tbody>
+                            <tr>
+                                <td class="empty-state" colspan="3">
+                                    Aucun objectif disponible
+                                </td>
+                            </tr>
+                        </tbody>
+                    }
+                </table>
             </div>
 
-            <div class="right">
-                <button class="primary" type="button" (click)="goToPage(0)" [disabled]="pageIndex === 0">«</button>
-                <button class="secondary" type="button" (click)="prev()" [disabled]="pageIndex === 0">‹</button>
-                <span>Page {{ pageIndex + 1 }} / {{ totalPages }}</span>
-                <button class="secondary" type="button" (click)="next()" [disabled]="pageIndex >= totalPages - 1">›</button>
-                <button class="primary" type="button" (click)="goToPage(totalPages - 1)" [disabled]="pageIndex >= totalPages - 1">»</button>
+            <div class="pager">
+                <div class="pager-left">
+                    <label>
+                        Par page
+                        <select id="pld" [ngModel]="pageSize" (ngModelChange)="setPageSize($event)">
+                            @for(s of pageSizes; track s){
+                                <option [ngValue]="s">{{ s }}</option>
+                            }
+                        </select>
+                    </label>
+                    <span>{{ total === 0 ? 0 : pageIndex * pageSize + 1 }} – {{ total === 0 ? 0 : Math.min((pageIndex + 1) * pageSize, total) }} sur {{ total }}</span>
+                </div>
+
+                <div class="pager-right">
+                    <button class="ghost-btn" type="button" (click)="goToPage(0)" [disabled]="pageIndex === 0">«</button>
+                    <button class="ghost-btn" type="button" (click)="prev()" [disabled]="pageIndex === 0">‹</button>
+                    <span>Page {{ pageIndex + 1 }} / {{ totalPages }}</span>
+                    <button class="ghost-btn" type="button" (click)="next()" [disabled]="pageIndex >= totalPages - 1">›</button>
+                    <button class="ghost-btn" type="button" (click)="goToPage(totalPages - 1)" [disabled]="pageIndex >= totalPages - 1">»</button>
+                </div>
             </div>
         </div>
-    </div>
+
+        <div class="mobile-cards">
+            @if(pagedRows.length){
+                @for(r of pagedRows; track r.id) {
+                    <div class="mobile-group-title">{{r.month}}/{{r.year}}</div>
+
+                    <div class="mobile-card">
+                        <div class="mobile-field">
+                            <label for="mobile_editObjectif_{{r.id}}">Objectif</label>
+                            <input id="mobile_editObjectif_{{r.id}}" type="text" [(ngModel)]="r.editObjectif" class="form-control table-input" (keydown)="onKeyDownNumber($event)" (paste)="common.validateNextValuePaste($event,numberObjectifRegex)"/>
+                        </div>
+
+                        <div class="mobile-actions">
+                            <button class="secondary small-btn" type="button" (click)="modify(r)" [disabled]="r.saving || !r.editObjectif || !hasChanged(r)">Modifier</button>
+                        </div>
+                    </div>
+                }
+
+                <div class="pager mobile-pager">
+                    <div class="pager-left">
+                        <label>
+                            Par page
+                            <select id="plm" [ngModel]="pageSize" (ngModelChange)="setPageSize($event)">
+                                @for(s of pageSizes; track s){
+                                    <option [ngValue]="s">{{ s }}</option>
+                                }
+                            </select>
+                        </label>
+                        <span>{{ total === 0 ? 0 : pageIndex * pageSize + 1 }} – {{ total === 0 ? 0 : Math.min((pageIndex + 1) * pageSize, total) }} sur {{ total }}</span>
+                    </div>
+
+                    <div class="pager-right">
+                        <button class="ghost-btn" type="button" (click)="goToPage(0)" [disabled]="pageIndex === 0">«</button>
+                        <button class="ghost-btn" type="button" (click)="prev()" [disabled]="pageIndex === 0">‹</button>
+                        <span>Page {{ pageIndex + 1 }} / {{ totalPages }}</span>
+                        <button class="ghost-btn" type="button" (click)="next()" [disabled]="pageIndex >= totalPages - 1">›</button>
+                        <button class="ghost-btn" type="button" (click)="goToPage(totalPages - 1)" [disabled]="pageIndex >= totalPages - 1">»</button>
+                    </div>
+                </div>
+            }
+            @else {
+                <div class="empty-state mobile-empty">
+                    Ancun objectif disponible
+                </div>
+            }
+        </div>
+    </section>
 </div>

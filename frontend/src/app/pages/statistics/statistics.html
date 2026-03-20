@@ -1,37 +1,77 @@
-<div class="stats-container">
-    <h2 class="stats-title">Statistiques des 6 derniers mois</h2>
+<div class="stats-page">
+    <section class="page-header">
+        <h1>Statistiques</h1>
+        <p>Analysez vos revenus, vos dépenses et votre épargne sur les derniers mois.</p>
+    </section>
 
-    <div class="chart-wrapper">
-        <canvas #barChart></canvas>
-    </div>
+    <section class="summary-grid">
+        <div class="summary-card">
+            <span class="summary-label">Dépenses du mois</span>
+            <strong class="summary-value">{{ currentAmount }} LBP</strong>
+        </div>
 
-    <h2 class="stats-title">Top 5 des dépenses du mois</h2>
-
-    <div class="chart-wrapper pie-wrapper">
-        <canvas #pieChart></canvas>
-    </div>
-
-    <h2 class="stats-title">Ecart avec le mois précédent</h2>
-    <div class="text-wrapper">
-        @if(gap !== 0){
-            <p>Dépenses ce mois-ci: {{currentAmount}} LBP</p>
-            <span>
-                @if(isPositive){
-                    📈 
+        <div class="summary-card">
+            <span class="summary-label">Variation mensuelle</span>
+            <strong class="summary-value">
+                @if(gap !== 0){
+                    {{ gap }}%
                 }
                 @else {
-                    📉 
+                    0%
                 }
-                {{gap}}% par rapport au mois dernier!
-            </span>
-        }
-        @else {
-            Pas de données statistiques!!!
-        }
-    </div>
+            </strong>
+        </div>
 
-    <h2 class="stats-title">Différence Revenus - Dépenses</h2>
-    <div class="chart-wrapper">
-        <canvas #lineChart></canvas>
-    </div>
+        <div class="summary-card">
+            <span class="summary-label">Tendance</span>
+            <strong class="summary-value">
+                @if(gap !== 0){
+                    @if(isPositive){
+                        📈 Hausse
+                    }
+                    @else {
+                        📉 Baisse
+                    }
+                }
+                @else {
+                    Stable
+                }
+            </strong>
+        </div>
+    </section>
+
+    <section class="stats-grid-top">
+        <section class="stats-card">
+            <div class="card-header">
+                <h2>Statistiques des 6 derniers mois</h2>
+                <p>Comparaison mensuelle entre revenus, dépenses et épargne.</p>
+            </div>
+
+            <div class="chart-box chart-bar">
+                <canvas #barChart></canvas>
+            </div>
+        </section>
+
+        <section class="stats-card">
+            <div class="card-header">
+                <h2>Top 5 des dépenses du mois</h2>
+                <p>Répartition des catégories les plus importantes.</p>
+            </div>
+
+            <div class="chart-box chart-pie">
+                <canvas #pieChart></canvas>
+            </div>
+        </section>
+    </section>
+
+    <section class="stats-card">
+        <div class="card-header">
+            <h2>Différence Revenus - Dépenses</h2>
+            <p>Visualisez la balance mensuelle entre ce que vous gagnez et ce que vous dépensez.</p>
+        </div>
+
+        <div class="chart-box chart-line">
+            <canvas #lineChart></canvas>
+        </div>
+    </section>
 </div>
