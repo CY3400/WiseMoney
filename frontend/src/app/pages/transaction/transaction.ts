@@ -12,6 +12,7 @@ type Id = number | string;
 interface Option {
   id: Id;
   label: string;
+  status: number;
 }
 
 interface Row extends TransactionDto {
@@ -164,7 +165,8 @@ export class Transaction implements OnInit {
       next:(list: ChildCategoryDto[]) => {
         this.childOptions = (list ?? []).map(c => ({
           id: c.id,
-          label: c.name
+          label: c.name,
+          status: c.status
         }));
 
         if(this.transaction.category && !this.childOptions.some(o => o.id === this.transaction.category)) {

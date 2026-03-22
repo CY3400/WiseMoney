@@ -117,6 +117,7 @@ public class CategoryController {
                 Map<String, Object> m = new HashMap<>();
                 m.put("id", c.getId());
                 m.put("name", c.getName());
+                m.put("status", c.getStatus());
                 return m;
             }
         ).toList();

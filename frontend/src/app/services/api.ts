@@ -38,6 +38,7 @@ import { Observable, map } from 'rxjs';
     id: number | string;
     name: string;
     displayName?: string;
+    status: number;
   }
 
   export interface CreateCategoryRequest {

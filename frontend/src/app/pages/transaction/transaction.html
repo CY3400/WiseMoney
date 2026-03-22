@@ -37,9 +37,11 @@
                     <select [disabled]="isSubmitting" id="category" name="category" [(ngModel)]="transaction.category" class="form-control" [class.border-danger]="errors.category">
                         <option [ngValue]="null" disabled>-- Sélectionner --</option>
                         @for(c of childOptions; track c.id) {
-                            <option [ngValue]="c.id">
-                                {{ c.label }}
-                            </option>
+                            @if(c.status == 1) {
+                                <option [ngValue]="c.id">
+                                    {{ c.label }}
+                                </option>
+                            }
                         }
                     </select>
                 </div>
