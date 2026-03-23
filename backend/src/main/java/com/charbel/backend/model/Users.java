@@ -1,5 +1,7 @@
 package com.charbel.backend.model;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -44,17 +46,11 @@ public class Users {
     @Column(nullable = false, length = 20)
     private Role role = Role.USER;
 
-    @Column(name = "midmonth_day10_threshold_percent", nullable = false)
-    private int midmonthDay10ThresholdPercent = 40;
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
-    @Column(name = "midmonth_day15_threshold_percent", nullable = false)
-    private int midmonthDay15ThresholdPercent = 55;
-
-    @Column(name = "runrate_warning_percent", nullable = false)
-    private int runrateWarningPercent = 10;
-
-    @Column(name = "runrate_critical_percent", nullable = false)
-    private int runrateCriticalPercent = 25;
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     public Users(){
 
@@ -73,6 +69,16 @@ public class Users {
         if(email != null) email = email.trim().toLowerCase();
         if(firstName != null) firstName = firstName.trim();
         if(lastName != null) lastName = lastName.trim();
+    }
+
+    @PrePersist
+    void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 
     public Long getId(){
@@ -116,16 +122,4 @@ public class Users {
     public void setRole(Role role){
         this.role = role;
     }
-
-    public int getMidmonthDay10ThresholdPercent() { return midmonthDay10ThresholdPercent; }
-    public void setMidmonthDay10ThresholdPercent(int v) { this.midmonthDay10ThresholdPercent = v; }
-
-    public int getMidmonthDay15ThresholdPercent() { return midmonthDay15ThresholdPercent; }
-    public void setMidmonthDay15ThresholdPercent(int v) { this.midmonthDay15ThresholdPercent = v; }
-
-    public int getRunrateWarningPercent() { return runrateWarningPercent; }
-    public void setRunrateWarningPercent(int v) { this.runrateWarningPercent = v; }
-
-    public int getRunrateCriticalPercent() { return runrateCriticalPercent; }
-    public void setRunrateCriticalPercent(int v) { this.runrateCriticalPercent = v; }
 }
