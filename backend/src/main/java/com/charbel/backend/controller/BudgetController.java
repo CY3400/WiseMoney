@@ -72,6 +72,7 @@ public class BudgetController {
         return ResponseEntity.ok(toMap(updated));
     }
 
+    @SuppressWarnings("null")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id, Authentication auth) {
         userService.currentUser(auth);

@@ -37,6 +37,7 @@ public class InsightService {
         this.insightHistoryRepo = insightHistoryRepo;
     }
 
+    @SuppressWarnings("null")
     public List<InsightDTO> getInsights(Long userId, YearMonth month, boolean force) {
         Users user = userRepo.findById(userId).orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
 

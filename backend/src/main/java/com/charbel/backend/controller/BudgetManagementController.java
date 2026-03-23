@@ -54,6 +54,7 @@ public class BudgetManagementController {
         return m;
     }
 
+    @SuppressWarnings("null")
     @PostMapping
     public ResponseEntity<Map<String, Object>> create(@RequestBody CreateBudgetManagementRequest req, Authentication auth) {
         Users user = userService.currentUser(auth);
@@ -65,6 +66,7 @@ public class BudgetManagementController {
         return ResponseEntity.status(201).body(toMap(created));
     }
 
+    @SuppressWarnings("null")
     @PutMapping("/{id}")
     public ResponseEntity<Map<String, Object>> update(@PathVariable Long id, @RequestBody UpdateBudgetManagementRequest req, Authentication auth) {
         Users user = userService.currentUser(auth);
