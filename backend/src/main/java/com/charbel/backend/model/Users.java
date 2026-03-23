@@ -64,21 +64,30 @@ public class Users {
         this.password = password;
     }
 
-    @PrePersist @PreUpdate
-    private void normalize(){
-        if(email != null) email = email.trim().toLowerCase();
-        if(firstName != null) firstName = firstName.trim();
-        if(lastName != null) lastName = lastName.trim();
-    }
-
     @PrePersist
-    void onCreate() {
-        createdAt = LocalDateTime.now();
+    private void onCreate() {
+        normalizeFields();
+        LocalDateTime now = LocalDateTime.now();
+        createdAt = now;
+        updatedAt = now;
     }
 
     @PreUpdate
-    void onUpdate() {
+    private void onUpdate() {
+        normalizeFields();
         updatedAt = LocalDateTime.now();
+    }
+
+    private void normalizeFields() {
+        if (email != null) {
+            email = email.trim().toLowerCase();
+        }
+        if (firstName != null) {
+            firstName = firstName.trim();
+        }
+        if (lastName != null) {
+            lastName = lastName.trim();
+        }
     }
 
     public Long getId(){

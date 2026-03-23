@@ -88,7 +88,7 @@ public class TransactionService {
     public List<Transaction> getTransactionsForUser(Users user) {
         Objects.requireNonNull(user, "Utilisateur requis");
 
-        return repo.findByUserOrderByTransactionDateDesc(user);
+        return repo.findByUserOrderByIdDesc(user);
     }
 
     @SuppressWarnings("null")

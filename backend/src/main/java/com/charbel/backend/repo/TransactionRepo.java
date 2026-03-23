@@ -28,9 +28,9 @@ public interface TransactionRepo extends JpaRepository<Transaction, Long> {
             join fetch t.category c
             left join fetch c.parent p
             where t.user = :user
-            order by t.transactionDate desc
+            order by t.id desc
             """)
-    List<Transaction> findByUserOrderByTransactionDateDesc(@Param("user") Users user);
+    List<Transaction> findByUserOrderByIdDesc(@Param("user") Users user);
 
     @Query("""
             SELECT COALESCE(SUM(t.amount), 0)
