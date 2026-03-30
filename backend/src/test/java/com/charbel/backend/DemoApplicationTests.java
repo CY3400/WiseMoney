@@ -1,9 +1,9 @@
-package com.example.demo;
+package com.charbel.backend;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
+@SpringBootTest(classes = BackendApplication.class)
 class DemoApplicationTests {
 
 	@Test
