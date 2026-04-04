@@ -2,6 +2,12 @@
     "configurations": [
         {
             "type": "java",
+            "name": "BackendApplication",
+            "request": "launch",
+            "mainClass": "com.charbel.backend.BackendApplication"
+        },
+        {
+            "type": "java",
             "name": "Spring Boot-BackendApplication<demo>",
             "request": "launch",
             "cwd": "${workspaceFolder}",
