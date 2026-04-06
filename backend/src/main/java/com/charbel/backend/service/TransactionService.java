@@ -91,7 +91,6 @@ public class TransactionService {
         return repo.findByUserOrderByIdDesc(user);
     }
 
-    @SuppressWarnings("null")
     public void deleteTransaction(Long id, Users user) {
         if(user == null) {
             throw new IllegalArgumentException("Utilisateur requis");

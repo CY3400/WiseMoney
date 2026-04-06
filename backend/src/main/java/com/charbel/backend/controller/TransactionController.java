@@ -63,7 +63,6 @@ public class TransactionController {
         return m;
     }
 
-    @SuppressWarnings("null")
     @PostMapping
     public ResponseEntity<Map<String, Object>> create(@RequestBody CreateTransactionRequest req, Authentication auth) {
         Users user = userService.currentUser(auth);
@@ -75,7 +74,6 @@ public class TransactionController {
         return ResponseEntity.status(201).body(toMap(created));
     }
 
-    @SuppressWarnings("null")
     @PutMapping("/{id}")
     public ResponseEntity<Map<String, Object>> update(@PathVariable Long id, @RequestBody UpdateTransactionRequest req, Authentication auth) {
         Users user = userService.currentUser(auth);
