@@ -97,7 +97,7 @@ export class Register {
 
     this.api.register(this.user).pipe(finalize(() => {this.isSubmitting = false;})).subscribe({
       next: (res) => {
-        this.router.navigate(['/acceuil'])
+        this.router.navigate(['/accueil'])
       },
       error: (err) => {
         this.errors.global = "Une erreur s'est produite lors de l'enregistrement.";

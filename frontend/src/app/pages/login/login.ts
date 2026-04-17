@@ -70,7 +70,7 @@ export class Login {
 
     this.api.login(this.user).pipe(finalize(() => { this.isSubmitting = false; })).subscribe({
       next: () => {
-        this.router.navigate(['/acceuil']);
+        this.router.navigate(['/accueil']);
       },
       error: () => {
         this.errors.global = "Mauvaises informations d'authentification";

@@ -20,7 +20,7 @@ export const routes: Routes = [
     {path:'bienvenue', component: Welcome, data: {public: true}},
     {path:'s-enregistrer', component: Register, title: 'WiseMoney - Inscription', data: {public: true}},
     {path:'se-connecter', component: Login, title: 'WiseMoney - Connexion', data: {public: true}},
-    {path:'acceuil', component: Home, title: 'WiseMoney - Acceuil', resolve: {me: MeResolver}},
+    {path:'accueil', component: Home, title: 'WiseMoney - Accueil', resolve: {me: MeResolver}},
     {path:'mon-compte', component: Myaccount, title: 'WiseMoney - Mon Compte', resolve: {me: MeResolver}},
     {path:'changer-mdp', component: Changepassword, title: 'WiseMoney - Changer le mot de passe', resolve: {me: MeResolver}},
     { path:'mot-de-passe-oublie', component: ForgotPassword, title:'WiseMoney - Mot de passe oublié' , data: {public: true}},

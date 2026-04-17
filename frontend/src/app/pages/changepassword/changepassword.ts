@@ -77,7 +77,7 @@ export class Changepassword {
       next: () => {
         this.errors.actualPassword = '';
         this.snackBar.open('Mot de passe changé avec succès.', '✖', { duration: 3000, horizontalPosition: 'right', verticalPosition: 'top', panelClass: ['custom-toast'] });
-        this.router.navigate(['/acceuil']);
+        this.router.navigate(['/accueil']);
       },
       error: (err) => {
         if(err.status === 400 || err.status === 401){
