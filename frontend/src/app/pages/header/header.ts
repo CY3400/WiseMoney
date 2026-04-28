@@ -24,7 +24,7 @@ export class Header {
   }
 
   homePage():void {
-    this.router.navigate(['/acceuil']);
+    this.router.navigate(['/accueil']);
   }
 
   toggleMenu(): void{
