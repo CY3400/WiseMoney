@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,6 +30,14 @@ public class BudgetManagementController {
     private final UserService userService;
     private final CategoryRepo catRepo;
     private final BudgetManagementService bMService;
+
+    private @NonNull Long validateCategoryId(Long categoryId) {
+        if (categoryId == null) {
+            throw new IllegalArgumentException("Catégorie requise");
+        }
+
+        return categoryId;
+    }
 
     public BudgetManagementController(UserService userService, BudgetManagementService bMService, CategoryRepo catRepo) {
         this.userService = userService;
@@ -58,7 +67,9 @@ public class BudgetManagementController {
     public ResponseEntity<Map<String, Object>> create(@RequestBody CreateBudgetManagementRequest req, Authentication auth) {
         Users user = userService.currentUser(auth);
 
-        Category cat = catRepo.findById(req.getCategory()).orElseThrow(() -> new IllegalArgumentException("Gestion introuvable"));
+        Long categoryId = validateCategoryId(req.getCategory());
+
+        Category cat = catRepo.findById(categoryId).orElseThrow(() -> new IllegalArgumentException("Catégorie introuvable"));
 
         BudgetManagement created = bMService.createBudgetManagement(user, cat, req.getAmount(), req.getType(), req.getFrequency());
 
@@ -69,7 +80,9 @@ public class BudgetManagementController {
     public ResponseEntity<Map<String, Object>> update(@PathVariable Long id, @RequestBody UpdateBudgetManagementRequest req, Authentication auth) {
         Users user = userService.currentUser(auth);
 
-        Category cat = catRepo.findById(req.getCategory()).orElseThrow(() -> new IllegalArgumentException("Gestion introuvable"));
+        Long categoryId = validateCategoryId(req.getCategory());
+
+        Category cat = catRepo.findById(categoryId).orElseThrow(() -> new IllegalArgumentException("Catégorie introuvable"));
 
         BudgetManagement updated = bMService.updateBudgetManagement(id, user, cat, req.getAmount(), req.getType(), req.getFrequency());
 
