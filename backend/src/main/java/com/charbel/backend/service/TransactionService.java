@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -91,7 +92,7 @@ public class TransactionService {
         return repo.findByUserOrderByIdDesc(user);
     }
 
-    public void deleteTransaction(Long id, Users user) {
+    public void deleteTransaction(@NonNull Long id, Users user) {
         if(user == null) {
             throw new IllegalArgumentException("Utilisateur requis");
         }
