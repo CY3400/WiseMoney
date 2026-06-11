@@ -7,12 +7,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
 
 import com.charbel.backend.model.BudgetManagement;
 import com.charbel.backend.model.Users;
 
-@Repository
 public interface BudgetManagementRepo extends JpaRepository<BudgetManagement, Long> {
     Optional<BudgetManagement> findByIdAndUser(Long id, Users user);
 
