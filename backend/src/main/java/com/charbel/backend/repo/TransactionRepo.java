@@ -8,8 +8,6 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
-
 import com.charbel.backend.DTO.ChildPercentView;
 import com.charbel.backend.DTO.DeltaTransactions;
 import com.charbel.backend.DTO.ParentSpendView;
@@ -19,7 +17,6 @@ import com.charbel.backend.model.CategoryType;
 import com.charbel.backend.model.Transaction;
 import com.charbel.backend.model.Users;
 
-@Repository
 public interface TransactionRepo extends JpaRepository<Transaction, Long> {
     Optional<Transaction> findByIdAndUser(Long id, Users user);
 
