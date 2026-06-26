@@ -69,7 +69,7 @@ public class MLDatasetService {
             }
         }
 
-        out.sort(Comparator.comparingInt(MLSnapshotDTO::getYear).thenComparingInt(MLSnapshotDTO::getMonth).thenComparingInt(MLSnapshotDTO::getDay));
+        out.sort(Comparator.comparingInt((MLSnapshotDTO dto) -> dto.getYear()).thenComparingInt((MLSnapshotDTO dto) -> dto.getMonth()).thenComparingInt((MLSnapshotDTO dto) -> dto.getDay()));
 
         return out;
     }
@@ -101,7 +101,7 @@ public class MLDatasetService {
 
                 Long catId = t.getCategory().getId();
                 if(catId != null){
-                    expByCat.merge(catId, amt, BigDecimal::add);
+                    expByCat.merge(catId, amt, (oldAmount, newAmount) -> nz(oldAmount).add(nz(newAmount)));
                 }
             }
             else if (type == CategoryType.REVENU) {
@@ -119,8 +119,8 @@ public class MLDatasetService {
         BigDecimal topCategoryShare = BigDecimal.ZERO;
 
         if(expenses.compareTo(BigDecimal.ZERO) > 0 && !expByCat.isEmpty()) {
-            BigDecimal top = expByCat.values().stream().max(BigDecimal::compareTo).orElse(BigDecimal.ZERO);
-            topCategoryShare = top.divide(expenses, 6, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100).setScale(2, RoundingMode.HALF_UP));
+            BigDecimal top = expByCat.values().stream().max((a, b) -> nz(a).compareTo(nz(b))).orElse(BigDecimal.ZERO);
+            topCategoryShare = top.multiply(BigDecimal.valueOf(100)).divide(expenses, 2, RoundingMode.HALF_UP);
         }
 
         MLSnapshotDTO dto = new MLSnapshotDTO();

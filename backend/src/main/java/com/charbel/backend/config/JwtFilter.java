@@ -71,7 +71,7 @@ public class JwtFilter extends OncePerRequestFilter {
             String cookieNames = "(none)";
             if (request.getCookies() != null) {
                 cookieNames = Arrays.stream(request.getCookies())
-                        .map(Cookie::getName)
+                        .map(cookie -> cookie.getName())
                         .distinct()
                         .sorted()
                         .toList()

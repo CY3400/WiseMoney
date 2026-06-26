@@ -76,7 +76,7 @@ public class JWTService {
     }
 
     public String extractEmail(String token) {
-        return extractClaim(token, Claims::getSubject);
+        return extractClaim(token, claims -> claims.getSubject());
     }
 
     public boolean isTokenValid(String token, String expectedUsername) {
@@ -90,12 +90,12 @@ public class JWTService {
     }
 
     private boolean isTokenExpired(String token) {
-        Date exp = extractClaim(token, Claims::getExpiration);
+        Date exp = extractClaim(token, claims -> claims.getExpiration());
         return exp.before(new Date());
     }
 
     public boolean isAboutToExpire(String token, long thresholdMs) {
-        Date exp = extractClaim(token, Claims::getExpiration);
+        Date exp = extractClaim(token, claims -> claims.getExpiration());
         long remaining = exp.getTime() - clock.millis();
         return remaining <= thresholdMs;
     }

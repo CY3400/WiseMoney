@@ -17,7 +17,7 @@ public class CategoryTypeController {
     public ResponseEntity<List<String>> list() {
         return ResponseEntity.ok(
             Arrays.stream(CategoryType.values())
-                .map(Enum::name)
+                .map(categoryType -> categoryType.name())
                 .toList()
         );
     }
