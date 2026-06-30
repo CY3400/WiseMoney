@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.lang.NonNull;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,7 +30,7 @@ public class BudgetManagementController {
     private final CategoryRepo catRepo;
     private final BudgetManagementService bMService;
 
-    private @NonNull Long validateCategoryId(Long categoryId) {
+    private Long validateCategoryId(Long categoryId) {
         if (categoryId == null) {
             throw new IllegalArgumentException("Catégorie requise");
         }
