@@ -6,7 +6,6 @@ import java.util.Map;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.http.ResponseEntity;
-import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,7 +31,7 @@ public class TransactionController {
     private final TransactionService transactionService;
     private final CategoryRepo catRepo;
 
-    private @NonNull Long validateCategoryId(Long categoryId) {
+    private Long validateCategoryId(Long categoryId) {
         if (categoryId == null) {
             throw new IllegalArgumentException("Catégorie requise");
         }
@@ -108,7 +107,7 @@ public class TransactionController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable @NonNull Long id, Authentication auth) {
+    public ResponseEntity<Void> delete(@PathVariable Long id, Authentication auth) {
         Users user = userService.currentUser(auth);
 
         transactionService.deleteTransaction(id, user);
