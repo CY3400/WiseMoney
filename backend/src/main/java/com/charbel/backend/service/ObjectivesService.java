@@ -68,7 +68,7 @@ public class ObjectivesService {
     }
 
     @Transactional(readOnly = true)
-    public Integer getSumObjectives(Users user){
+    public BigDecimal getSumObjectives(Users user){
         Objects.requireNonNull(user, "Utilisateur requis");
 
         return repo.getSumObjectives(user.getId());

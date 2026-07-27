@@ -1,5 +1,6 @@
 package com.charbel.backend.controller;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,10 +63,10 @@ public class ObjectivesController {
     }
 
     @GetMapping("/sum")
-    public ResponseEntity<Integer> sumObjectives(Authentication auth) {
+    public ResponseEntity<BigDecimal> sumObjectives(Authentication auth) {
         Users user = userService.currentUser(auth);
 
-        Integer out = objectivesService.getSumObjectives(user);
+        BigDecimal out = objectivesService.getSumObjectives(user);
 
         return ResponseEntity.ok(out);
     }
