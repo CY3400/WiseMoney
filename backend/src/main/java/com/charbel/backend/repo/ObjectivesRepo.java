@@ -1,5 +1,6 @@
 package com.charbel.backend.repo;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,5 +20,5 @@ public interface ObjectivesRepo extends JpaRepository<Objectives, Long> {
     FROM OBJECTIVES
     WHERE USER_ID = :userId;
     """, nativeQuery = true)
-    Integer getSumObjectives(@Param("userId") Long userId);
+    BigDecimal getSumObjectives(@Param("userId") Long userId);
 }

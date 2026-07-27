@@ -1,5 +1,6 @@
 package com.charbel.backend.model;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
@@ -18,6 +19,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -49,7 +51,7 @@ public class Category {
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(nullable = true)
+    @Column(nullable = false, length = 20)
     private CategoryType type;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
@@ -70,6 +72,21 @@ public class Category {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @NotNull
+    @DecimalMin(value = "0.00")
+    @Column(nullable = false, precision = 16, scale = 2)
+    private BigDecimal amount = BigDecimal.ZERO;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type_allocation", nullable = false, length = 20)
+    private TypeAllocation typeAllocation = TypeAllocation.LBP;
+
+    @Min(1)
+    @Max(2)
+    @Column(nullable = false)
+    private int frequency = 1;
 
     @PrePersist
     void onCreate() {
@@ -105,4 +122,28 @@ public class Category {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public BigDecimal getAmount() {
+        return amount;
+    }
+
+    public void setAmount(BigDecimal amount) {
+        this.amount = amount;
+    }
+
+    public TypeAllocation getTypeAllocation() {
+        return typeAllocation;
+    }
+
+    public void setTypeAllocation(TypeAllocation typeAllocation) {
+        this.typeAllocation = typeAllocation;
+    }
+
+    public int getFrequency() {
+        return frequency;
+    }
+
+    public void setFrequency(int frequency) {
+        this.frequency = frequency;
+    }
 }

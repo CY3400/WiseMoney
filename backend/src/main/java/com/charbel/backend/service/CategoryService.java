@@ -11,7 +11,6 @@ import com.charbel.backend.DTO.TopExpensesByMonth;
 import com.charbel.backend.model.Category;
 import com.charbel.backend.model.CategoryType;
 import com.charbel.backend.model.Users;
-import com.charbel.backend.repo.BudgetManagementRepo;
 import com.charbel.backend.repo.CategoryRepo;
 
 
@@ -19,11 +18,9 @@ import com.charbel.backend.repo.CategoryRepo;
 @Transactional
 public class CategoryService {
     private final CategoryRepo repo;
-    private final BudgetManagementRepo bMRepo;
 
-    public CategoryService(CategoryRepo repo, BudgetManagementRepo bMRepo) {
+    public CategoryService(CategoryRepo repo) {
         this.repo = repo;
-        this.bMRepo = bMRepo;
     }
 
     public Category createCategory(Users user, CategoryType type, Category parent, String name) {
@@ -136,7 +133,7 @@ public class CategoryService {
         existing.setStatus(existing.getStatus() == 0 ? 1 : 0);
 
         if (existing.getStatus() == 0) {
-            bMRepo.resetAmountToZeroByCategoryId(existing.getId());
+            //bMRepo.resetAmountToZeroByCategoryId(existing.getId());
         }
 
         return repo.save(existing);
